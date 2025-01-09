@@ -1,13 +1,16 @@
 module functions
 
+using LinearAlgebra
+using DifferentialEquations
+using JLD2
+
 include("systemparams.jl")
-include("dependencies.jl")
-using .dependencies
 using .systemparams
 
 export solve_master_eqn, rydberg_populations, Parameters
 
 const σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z = system_constants()
+const Ω1, Ω2, γ_Decay, γ_dephase, V1_nn, V2_nn, δ, Δ1_0, Δ2_0, T_optimal = unpack_params()
 
 struct Parameters
     Ω1::Float64
@@ -41,7 +44,7 @@ function master_eqn(dρ,ρ,p,t)
     # σ_minus = global σ_minus
     # σ_plus = global σ_plus
     # σ_z = global σ_z
-
+    n_atoms = 2
     #parameters
     Δ1_t, Δ2_t, Ω1, Ω2, γ_Decay, γ_dephase, V1_nn, V2_nn = p(t)
 

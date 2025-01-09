@@ -1,17 +1,20 @@
 module systemparams
 
-export initialize_system, system_constants, params
+using LinearAlgebra
+using DifferentialEquations
+using JLD2
+
+export initialize_system, system_constants, unpack_params, α, β, r, g
 
 const r = [0;1]
 const g = [1;0]
+#initial state of the system
+const α = 1
+const β = sqrt(1-α^2)
 
 function initialize_system()
     # r = global r
     # g = global g
-    
-    #initial state of the system
-    α = 1
-    β = sqrt(1-α^2)
     ψ_a = α.*r + β.*g
     
     ψ_0 = [ψ_a,g,g]
@@ -42,7 +45,7 @@ function params()
         :γ_dephase => 0.0,      # Dephasing rate
         :V1_nn => -1000.0,      # rydberg interaction
         :V2_nn => -1000.0,
-        :δ => 0.108             # adiabtatic sweep rate
+        :δ => 0.108,             # adiabtatic sweep rate
         :Δ1_0 => 1032.0,        # initial detuning
         :Δ2_0 => 1032.0,
         :T_optimal => 582.0     # optimal time
