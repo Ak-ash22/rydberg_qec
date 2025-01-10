@@ -1,12 +1,4 @@
-module functions
-
-using LinearAlgebra
-using DifferentialEquations
-using JLD2
 include("systemparams.jl")
-using .systemparams
-
-export solve_master_eqn, rydberg_populations, Parameters
 
 const σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z = system_constants()
 const Ω1, Ω2, γ_Decay, γ_dephase, V1_nn, V2_nn, δ, Δ1_0, Δ2_0, T_optimal = unpack_params()
@@ -120,6 +112,4 @@ function solve_master_eqn(p::Parameters, tspan)
     eqn = ODEProblem(master_eqn, ρ_0, tspan, p)
     sol = solve(eqn, Rodas3(autodiff=false), saveat = 1)
     return sol[end]
-end
-
 end

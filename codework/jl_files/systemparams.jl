@@ -1,11 +1,6 @@
-module systemparams
-
 using LinearAlgebra
 using DifferentialEquations
-using JLD2
-
-export initialize_system, system_constants, unpack_params, α, β, r, g, n_atoms
-
+using JLD2, FileIO
 
 const n_atoms = 2
 const r = [0;1]
@@ -68,6 +63,4 @@ function unpack_params()
     "
     p = params()
     return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:V2_nn], p[:δ], p[:Δ1_0], p[:Δ2_0], p[:T_optimal]
-end
-
 end
