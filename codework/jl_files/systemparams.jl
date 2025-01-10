@@ -4,17 +4,21 @@ using LinearAlgebra
 using DifferentialEquations
 using JLD2
 
-export initialize_system, system_constants, unpack_params, α, β, r, g
+export initialize_system, system_constants, unpack_params, α, β, r, g, n_atoms
 
+
+const n_atoms = 2
 const r = [0;1]
 const g = [1;0]
 #initial state of the system
 const α = 1
 const β = sqrt(1-α^2)
 
+
 function initialize_system()
-    # r = global r
-    # g = global g
+    "
+    Output: The initial density matrix of the system
+    "    
     ψ_a = α.*r + β.*g
     
     ψ_0 = [ψ_a,g,g]
@@ -24,6 +28,9 @@ function initialize_system()
 end
 
 function system_constants()
+    "
+    Defining the system Matrices
+    "
     #2x2 Matrices
     σ_x = [0 1; 1 0]
     n = [0 0; 0 1]
@@ -38,6 +45,9 @@ function system_constants()
 end
 
 function params()
+    "
+    Defining the system parameters
+    "
     return Dict(
         :Ω1 => 1.0,             # Rabi frequency
         :Ω2 => 1.0,             
@@ -53,6 +63,9 @@ function params()
 end
 
 function unpack_params()
+    "
+    Unpack the system parameters
+    "
     p = params()
     return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:V2_nn], p[:δ], p[:Δ1_0], p[:Δ2_0], p[:T_optimal]
 end
