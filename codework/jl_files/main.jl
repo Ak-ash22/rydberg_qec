@@ -22,8 +22,8 @@ function case1()
 
 
     @time begin
-        decay = 10 .^ range(-5,-2,length=2);
-        sweep_rate = collect(range(0.01,0.2,length=2));
+        decay = 10 .^ range(-5,-1,length=5);
+        sweep_rate = collect(range(0.01,0.25,length=1000));
         l = length(decay)
         m = length(sweep_rate)
     
