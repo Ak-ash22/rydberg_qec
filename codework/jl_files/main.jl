@@ -23,13 +23,13 @@ function case1()
 
     @time begin
         decay = 10 .^ range(-5,-1,length=5);
-        sweep_rate = collect(range(0.01,0.25,length=1000));
+        sweep_rate = collect(range(0.01,0.20,length=500));
         l = length(decay)
         m = length(sweep_rate)
     
         ψ_ideal = α*kron(r,r,r) + β*kron(g,g,g)
-        fidelity = Array{Float64}(undef,l,m)  # Ensure fidelity is pre-allocated
-    
+        fidelity_end = Array{Float64}(undef,l,m)  # Ensure fidelity is pre-allocated
+        max_fidelity = Array{Float64}(undef,l,m)  # Ensure max fidelity is pre-allocated
         Threads.@threads for idx in 1:l*m
             i = (idx-1) ÷ m + 1  # Calculate the row index
             j = (idx-1) % m + 1  # Calculate the column index
@@ -38,15 +38,21 @@ function case1()
             b = sweep_rate[j]
 
             p = Parameters(Ω1,Ω2,a,γ_dephase,V1_nn,V2_nn,b)
+            T_optimal = 2*(Δ1_0+V1_nn)/b
             tspan = (0.0, T_optimal)
 
+            f = []
             @time solution = solve_master_eqn(p, tspan)
-            f = tr(ψ_ideal' * solution * ψ_ideal)
-            fidelity[i, j] = real(f)
+
+            for ρ in solution.u
+                push!(f, tr(ψ_ideal' * ρ * ψ_ideal))
+            end
+            fidelity_end[i, j] = real(f[end])
+            max_fidelity[i, j] = maximum(real(f))
         end
     end
  
-    @save "$(data_folder)/optimal_decay.jld2" decay sweep_rate fidelity
+    @save "$(data_folder)/optimal_decay_trial1.jld2" decay sweep_rate fidelity_end max_fidelity
 end
 
 
@@ -57,16 +63,16 @@ function main()
 
     choice = readline()
 
-    try
-        choice = parse(Int64, choice)
-        if choice == 1
-            case1()
-        else
-            println("Bruh! Enter a valid choice")
-        end
-    catch e
+    # try
+    choice = parse(Int64, choice)
+    if choice == 1
+        case1()
+    else
         println("Bruh! Enter a valid choice")
     end
+    # catch e
+    #     println("An Error has occured in the case selected")
+    # end
 end
 
 main()
