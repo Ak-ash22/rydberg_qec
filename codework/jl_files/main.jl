@@ -17,6 +17,9 @@ const Ω1, Ω2, γ_Decay, γ_dephase, V1_nn, V2_nn, δ, Δ1_0, Δ2_0, T_optimal 
 function case1()
     """
     Case 1: Optimal fidelity with respect to decay and sweep rate
+            - Returns the end fidelity for a range of decay and sweep rate
+            - And also returns the maximum fidelity obtained for a range of decay and sweep rate
+
     """
     println("Running for Optimal fidelity with respect to decay and sweep rate")
 

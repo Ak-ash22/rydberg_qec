@@ -18,6 +18,8 @@ end
 function (p::Parameters)(t)
     """
     Function to get the parameters of the system at time t for both the atoms
+        - tf=0: driving both atoms 1 and 2 at the same time
+        - tf!=0: driving atom 1 first and then atom 2 after tf time
 
     Parameters: 
         - time t: Float64
@@ -45,14 +47,17 @@ function master_eqn(dρ,ρ,p,t)
     """
     #parameters
     Δ1_t, Δ2_t, Ω1, Ω2, γ_Decay, γ_dephase, V1_nn, V2_nn = p(t)
+    
+    ### System:
+    ### 1-----A------2
 
     #Hamiltonian elements
-    nn_sys = [kron(n,n,I), kron(I,n,n), kron(n,I,n)]
-    σminus_sys = [reduce(kron,[I,σ_minus,I]),reduce(kron,[I,I,σ_minus])]
-    σplus_sys = [reduce(kron,[I,σ_plus,I]), reduce(kron,[I,I,σ_plus])]
-    σz_sys = [reduce(kron,[I,σ_z,I]), reduce(kron,[I,I,σ_z])]
-    n_sys = [reduce(kron,[I,n,I]), reduce(kron,[I,I,n])]
-    σx_sys = [reduce(kron,[I,σ_x,I]), reduce(kron,[I,I,σ_x])]
+    nn_sys = [kron(n,n,I), kron(n,I,n), kron(I,n,n)]
+    σminus_sys = [reduce(kron,[σ_minus,I,I]),reduce(kron,[I,I,σ_minus])]
+    σplus_sys = [reduce(kron,[σ_plus,I,I]), reduce(kron,[I,I,σ_plus])]
+    σz_sys = [reduce(kron,[σ_z,I,I]), reduce(kron,[I,I,σ_z])]
+    n_sys = [reduce(kron,[n,I,I]), reduce(kron,[I,I,n])]
+    σx_sys = [reduce(kron,[σ_x,I,I]), reduce(kron,[I,I,σ_x])]
 
     #Hamiltonian
     H = Ω1/2 .* σx_sys[1] + Ω2/2 .* σx_sys[2] + V1_nn .* nn_sys[1] + V2_nn .* nn_sys[3] +
@@ -85,13 +90,13 @@ function rydberg_populations(sol)
     Returns:
         - lists containing real values of the populations
     """
-    a = reduce(kron,[I,n,I])
+    a = reduce(kron,[n,I,I])
     rydberg1 = [real(tr(a*ρ)) for ρ in sol.u]
 
     b = reduce(kron,[I,I,n])
     rydberg2 = [real(tr(b*ρ)) for ρ in sol.u]
 
-    c = reduce(kron,[I,n,n])
+    c = reduce(kron,[n,I,n])
     rydberg12 = [real(tr(c*ρ)) for ρ in sol.u]
 
     return rydberg1, rydberg2, rydberg12

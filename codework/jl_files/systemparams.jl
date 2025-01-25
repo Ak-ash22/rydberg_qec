@@ -12,11 +12,14 @@ const β = sqrt(1-α^2)
 
 function initialize_system()
     "
+    System:
+    1-----A------2
+    
     Output: The initial density matrix of the system
     "    
     ψ_a = α.*r + β.*g
     
-    ψ_0 = [ψ_a,g,g]
+    ψ_0 = [g,ψ_a,g]
     ρ_0 = complex(reduce(kron,ψ_0) * reduce(kron,ψ_0)');
     
     return ρ_0
