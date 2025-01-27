@@ -2,8 +2,8 @@ include("functions.jl")
 include("systemparams.jl")
 
 #Saving the output
-# script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
-script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
+script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
+# script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
 data_folder = joinpath(script_dir, "results_data/$(n_atoms)atoms")
 
 if !isdir(data_folder)
@@ -27,7 +27,7 @@ function case1()
 
     @time begin
         decay = 10 .^ range(-5,-1,length=5);
-        sweep_rate = collect(range(0.01,0.50,length=2000));
+        sweep_rate = collect(range(0.01,0.50,length=1000));
         l = length(decay)
         m = length(sweep_rate)
     
@@ -67,16 +67,16 @@ function main()
 
     choice = readline()
 
-    # try
-    choice = parse(Int64, choice)
-    if choice == 1
-        case1()
-    else
-        println("Bruh! Enter a valid choice")
+    try
+        choice = parse(Int64, choice)
+        if choice == 1
+            case1()
+        else
+            println("Bruh! Enter a valid choice")
+        end
+        catch e
+            println("An Error has occured in the case selected")
     end
-    # catch e
-    #     println("An Error has occured in the case selected")
-    # end
 end
 
 main()
