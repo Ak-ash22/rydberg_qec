@@ -50,7 +50,7 @@ function initialize_system()
 
     Returns: The wavefunction of the system at t=0.
     "
-    ψ_system = wavefunction(total_qubits,α,β,2)
+    ψ_system = wavefunction(3,α,β,2)
 
     return ψ_system
 end
@@ -69,7 +69,7 @@ function system_constants()
     σ_plus = [0 0; 1 0]
     σ_z = [1 0; 0 -1]
     
-    return σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z
+    return σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z   #Need to define these as const in main.jl
 end
 
 function params()
@@ -95,7 +95,7 @@ function params()
     )
 end
 
-function unpack_params()
+function unpack_params()  #Need to define these as const in main.jl
     "
     Unpack the system parameters
     "
