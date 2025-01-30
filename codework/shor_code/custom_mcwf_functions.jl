@@ -1,33 +1,34 @@
 ##Helper Functions 
-function full_operator(gate, total_qubits, sites)
+
+function full_operator(operator::Matrix,num_qubits::Int64,site::Array)
     """
-    Applies an arbitrary gate on a specified site `i` in a `total_qubits`-qubit system.
-    All other sites are identity operators.
+
+    Function to calculate the matrix of the given operator in N-qubit system acting at 
+    the given sites
 
     Args:
-    - gate: AbstractOperator (arbitrary gate to apply on site `i`)
-    - i: Array (site index to apply the gate, 1-based)
-    - total_qubits: Int (total number of qubits)
+        operator:: Array{Float64,2}: Operator matrix
+        num_qubits:: Int64: Total number of qubits in the system
+        site: Int64:: Site at which the operator acts
 
     Returns:
-    - operator: AbstractOperator (the full operator acting on the entire system)
+        operator_matrix:: Matrix: Operator acting at the given site
+
     """
-    # Ensure the gate is an AbstractOperator
-    if !(gate isa AbstractOperator)
-        throw(ArgumentError("The gate must be an AbstractOperator"))
+
+    @assert 1<=num_qubits "Number of qubits should be greater than 0"
+    @assert size(operator) == (2,2) "Operator should be a 2x2 matrix"
+
+    I = [1 0; 0 1]
+    matrices = [I for _ in 1:num_qubits]
+
+    for s in site
+        @assert 1<=s<=num_qubits "Site should be between 1 and num_qubits"
+        matrices[s] = operator
     end
 
-    # Create an identity operator for each qubit
-    identity = transition(NLevelBasis(2), 1,1) + transition(NLevelBasis(2), 2,2)
-    identity_ops = [identity for _ in 1:total_qubits]
-    
-    # Replace the identity operator at site `i` with the provided gate
-    for j in sites
-        identity_ops[j] = gate
-    end
-
-    # Return the Kronecker product of all operators
-    return tensor(identity_ops...)
+    operator_matrix = reduce(kron, matrices)
+    return operator_matrix
 end
 
 struct qubit_parameters
@@ -109,13 +110,9 @@ function hamiltonian1(p::NTuple)
         - H:: Matrix : Hamiltonian at time t
     """
     Δ_t, Ω, γ_Decay, γ_dephase, V_nn = p
-    
-    basis = NLevelBasis(2)
-    n = transition(basis,2,2)
-    σx = transition(basis,1,2) + transition(basis,2,1)
 
-    σx_a = full_operator(σx, total_qubits, [1])
-    σx_c = full_operator(σx, total_qubits, [3])
+    σx_a = full_operator(σ_x, total_qubits, [1])
+    σx_c = full_operator(σ_x, total_qubits, [3])
 
     n_a = full_operator(n,total_qubits, [1])
     n_c = full_operator(n, total_qubits, [3])
@@ -124,7 +121,7 @@ function hamiltonian1(p::NTuple)
     nn_bc = full_operator(n, total_qubits, [2,3])
 
 
-    H = Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc) 
+    H = Ω/2 .* (σx_a + σx_c) + Δ_t .* (n_a + n_c) + V_nn .* (nn_ab + nn_bc) 
 
     return H
 end
@@ -142,17 +139,31 @@ function lindbaldian_decay(γ_Decay::Float64,site::Array)
     Returns:
         C:: Array{Matrix}: Array of decay operators acting on the system
     """
-    basis = NLevelBasis(2)
-    σ_minus = transition(basis,1,2)
-    identity = transition(basis,1,1) + transition(basis,2,2)
-    C = Vector{Operator}(undef, total_qubits)
+    C = [I for _ in 1:length(site)]
     
-    for i in 1:total_qubits
-        if i in site
-            C[i] = sqrt(γ_Decay) .* full_operator(σ_minus, total_qubits, [i])
-        else
-            C[i] = full_operator(identity, total_qubits, [i])
-        end
+    for i in site
+        C[i] = sqrt(γ_Decay) * full_operator(σ_minus, 3, [i])
+    end
+
+    return C
+end
+
+function lindbaldian_dephase(γ_dephase::Float64,site::Array)
+    """
+    Function to calculate the Lindbaldian decay operator for the MCWF method.
+    The dephase operators are returned according to given respective sites.
+
+    Args:
+        γ_Decay:: Float64: Decay rate
+        site:: Array: Array of sites at which the decay operator acts
+
+    Returns:
+        C:: Array{Matrix}: Array of decay operators acting on the system
+    """
+    C = [I for _ in 1:length(site)]
+    
+    for i in site
+        C[i] = sqrt(γ_dephase) * full_operator(σ_z, total_qubits, [i])
     end
 
     return C
@@ -168,3 +179,24 @@ function f(t,ψ)
     Cdagger = [adjoint(i) for i in C]
     return H, C, Cdagger
 end
+
+
+# function mcwf(H,C,ψ0,tspan,N_trajectories,dt=1)
+#     """
+#     Function to calculate the Monte Carlo Wavefunction (MCWF) for the given Hamiltonian and decay operators.
+
+#     Args:
+#         H:: Matrix: Hamiltonian of the system
+#         C:: Array{Matrix}: Array of decay operators acting on the system
+#         ψ0:: Array{ComplexF64,1}: Initial wavefunction of the system
+#         tspan:: Tuple: Tuple of start and end time of the simulation
+#         N_trajectories:: Int64: Number of trajectories
+#         dt:: Float64: Time step
+    
+#     Returns:
+#         ψ:: Array{ComplexF64,1}: Wavefunction of the system at the end of the simulation
+#     """
+
+#     ψ_final = zeros(ComplexF64, length(ψ0), N_trajectories)
+
+    

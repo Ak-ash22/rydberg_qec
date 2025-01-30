@@ -50,7 +50,7 @@ function initialize_system()
 
     Returns: The wavefunction of the system at t=0.
     "
-    ψ_system = wavefunction(3,α,β,2)
+    ψ_system = wavefunction(total_qubits,α,β,2)
 
     return ψ_system
 end
@@ -78,7 +78,7 @@ function params()
     "
     return Dict(
         :Ω => 1.0,             # Rabi frequency            
-        :γ_Decay => 0.0,        # Decay rate on the qubits
+        :γ_Decay => 1e-3,        # Decay rate on the qubits
         :γ_dephase => 0.0,      # Dephasing rate on the qubits
         :V1_nn => -1000.0,      # rydberg interaction on the qubits
         # :V2_nn => -1000.0,      # rydberg interaction on the ancillas
