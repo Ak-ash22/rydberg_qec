@@ -21,10 +21,17 @@ function main(N_trajectories::Int)
     """
     println("Running the simulation with N_trajectories = $N_trajectories")
 
+    basis = NLevelBasis(2)
+    k = transition(basis,2,2)
+    n_a = full_operator(k,total_qubits, [1])
+    n_c = full_operator(k, total_qubits, [3])
+    n_ac = full_operator(k, total_qubits, [1,3])
+
     @time begin
         ψ0 = initialize_system()
+        println("The system has been initialized.")
         # p1 = qubit_parameters(Ω, γ_Decay, γ_dephase, V_nn, δ)
-        tspan = [0.0:1:T_optimal;];
+        tspan = [0.0:1:T_optimal;]
 
         full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
         ψ0_ket = Ket(full_basis, ComplexF64.(ψ0)) 
@@ -33,15 +40,11 @@ function main(N_trajectories::Int)
         population_c = zeros(length(tspan))
         population_ac = zeros(length(tspan))
 
-        basis = NLevelBasis(2)
-        k = transition(basis,2,2)
-
-        n_a = full_operator(k,total_qubits, [1])
-        n_c = full_operator(k, total_qubits, [3])
-        n_ac = full_operator(k, total_qubits, [1,3])
-
-        Thread.@threads for i in 1:N_trajectories
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;alg=Rodas3(autodiff=false))
+        println("Starting the simulation...")
+        Threads.@threads for i in 1:N_trajectories
+            
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;alg=Rodas3(autodiff=false),maxiters=1e7)
+            println("Trajectory $i")
             population_a .+= real(expect(n_a, ψt))
             population_c .+= real(expect(n_c, ψt))
             population_ac .+= real(expect(n_ac, ψt))
@@ -52,7 +55,8 @@ function main(N_trajectories::Int)
         population_ac ./= N_trajectories
     end
 
-    @save "$(data_folder)/γ_decay=$(γ_decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac
+    println("Simulation complete. Saving data...")
+    @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac
 end
 
 # --- Parse command-line arguments ---

@@ -124,7 +124,7 @@ function hamiltonian1(p::NTuple)
     nn_bc = full_operator(n, total_qubits, [2,3])
 
 
-    H = Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc) 
+    H = sparse(Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc))
 
     return H
 end
