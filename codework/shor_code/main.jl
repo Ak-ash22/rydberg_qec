@@ -56,7 +56,7 @@ function main(N_trajectories::Int)
     end
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac
+    @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories)_4atoms.jld2" population_a population_c population_ac
 end
 
 # --- Parse command-line arguments ---
