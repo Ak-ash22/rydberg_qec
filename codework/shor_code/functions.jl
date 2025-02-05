@@ -115,6 +115,7 @@ function hamiltonian1(p::NTuple)
     σx = transition(basis,1,2) + transition(basis,2,1)
 
     σx_a = full_operator(σx, total_qubits, [1])
+    σx_b = full_operator(σx, total_qubits, [2])
     σx_c = full_operator(σx, total_qubits, [3])
 
     n_a = full_operator(n,total_qubits, [1])
@@ -123,8 +124,8 @@ function hamiltonian1(p::NTuple)
     nn_ab = full_operator(n, total_qubits, [1,2])
     nn_bc = full_operator(n, total_qubits, [2,3])
 
-
-    H = sparse(Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc))
+    H = sparse(Ω/2 .* (σx_a + σx_b + σx_c))
+    # H = sparse(Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc))
 
     return H
 end
@@ -167,4 +168,5 @@ function f(t,ψ)
     C = lindbaldian_decay(pt[3],[1,2,3])
     Cdagger = [adjoint(i) for i in C]
     return H, C, Cdagger
+    # return H
 end

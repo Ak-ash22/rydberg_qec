@@ -45,18 +45,22 @@ function main(N_trajectories::Int)
             
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;alg=Rodas3(autodiff=false),maxiters=1e7)
             println("Trajectory $i")
-            population_a .+= real(expect(n_a, ψt))
-            population_c .+= real(expect(n_c, ψt))
-            population_ac .+= real(expect(n_ac, ψt))
+
+            for i in 1:length(tout)
+                ψt[i] = ψt[i] / norm(ψt[i])
+                population_a[i] = real(expect(n_a, ψt[i]))
+                population_c[i] = real(expect(n_c, ψt[i]))
+                population_ac[i] = real(expect(n_ac, ψt[i]))
+            end
         end
 
-        population_a ./= N_trajectories
-        population_c ./= N_trajectories
-        population_ac ./= N_trajectories
+        # population_a ./= N_trajectories
+        # population_c ./= N_trajectories
+        # population_ac ./= N_trajectories
     end
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories)_4atoms.jld2" population_a population_c population_ac
+    @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories)_trial.jld2" population_a population_c population_ac
 end
 
 # --- Parse command-line arguments ---
