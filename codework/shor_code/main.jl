@@ -12,8 +12,8 @@ if !isdir(data_folder)
     mkpath(data_folder)
 end
 
-const σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z = system_constants()
-const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T_optimal = unpack_params()
+# const σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z = system_constants()
+# const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T_optimal = unpack_params()
 
 function main(N_trajectories::Int)
     """
@@ -26,12 +26,14 @@ function main(N_trajectories::Int)
     n_a = full_operator(k,total_qubits, [1])
     n_c = full_operator(k, total_qubits, [3])
     n_ac = full_operator(k, total_qubits, [1,3])
+    
+    tspan = [0.0:1:T_optimal;]
 
     @time begin
         ψ0 = initialize_system()
         println("The system has been initialized.")
         # p1 = qubit_parameters(Ω, γ_Decay, γ_dephase, V_nn, δ)
-        tspan = [0.0:1:T_optimal;]
+        
 
         full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
         ψ0_ket = Ket(full_basis, ComplexF64.(ψ0)) 
@@ -42,8 +44,9 @@ function main(N_trajectories::Int)
 
         println("Starting the simulation...")
         Threads.@threads for i in 1:N_trajectories
-            
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;alg=Rodas3(autodiff=false),maxiters=1e7)
+            # const C = lindbaldian_decay(γ_Decay,[1,2,3])
+            # const Cdagger = [adjoint(c) for c in C]
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;alg=QNDF(autodiff=false),maxiters=1e7)
             println("Trajectory $i")
 
             for i in 1:length(tout)
@@ -62,6 +65,40 @@ function main(N_trajectories::Int)
     println("Simulation complete. Saving data...")
     @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories)_trial.jld2" population_a population_c population_ac
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # --- Parse command-line arguments ---
 if abspath(PROGRAM_FILE) == @__FILE__
