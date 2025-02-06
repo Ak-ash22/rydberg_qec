@@ -55,23 +55,6 @@ function initialize_system()
     return ψ_system
 end
 
-function system_constants()
-    "
-    Defining the single atom system matrices
-    "
-    #2x2 Matrices
-    σ_x = [0 1; 1 0]
-    n = [0 0; 0 1]
-    Π_g = [1 0; 0 0]
-    n = [0 0; 0 1]
-    I = [1 0; 0 1]
-    σ_minus = [0 1; 0 0]
-    σ_plus = [0 0; 1 0]
-    σ_z = [1 0; 0 -1]
-    
-    return σ_x, n, Π_g, n, I, σ_minus, σ_plus, σ_z   #Need to define these as const in main.jl
-end
-
 function params()
     "
     Defining the system parameters
@@ -82,11 +65,11 @@ function params()
         :γ_dephase => 0.0,      # Dephasing rate on the qubits
         :V1_nn => -1000.0,      # rydberg interaction on the qubits
         # :V2_nn => -1000.0,      # rydberg interaction on the ancillas
-        :δ1 => 0.108,            # adiabtatic sweep rate for qubits
+        :δ1 => 0.417,            # adiabtatic sweep rate for qubits
         # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
         # :Δ2_0 => 1032.0,        # Detuning at t=0 for ancillas
-        :T1 => 582.0     # Evolution time for step 1
+        :T1 => 154.0     # Evolution time for step 1
         # :T2 => 582.0     # Evolution time for step 2
         # :T3 => 582.0     # Evolution time for step 3
         # :T4 => 582.0     # Evolution time for step 4

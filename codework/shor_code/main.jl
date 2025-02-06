@@ -66,40 +66,6 @@ function main(N_trajectories::Int)
     @save "$(data_folder)/γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories)_trial.jld2" population_a population_c population_ac
 end
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # --- Parse command-line arguments ---
 if abspath(PROGRAM_FILE) == @__FILE__
     if length(ARGS) < 1

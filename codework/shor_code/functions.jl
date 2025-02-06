@@ -34,6 +34,7 @@ function full_operator(gate, total_qubits, sites)
     return tensor(identity_ops...)
 end
 
+
 struct qubit_parameters
     Ω::Float64
     γ_Decay::Float64
@@ -51,7 +52,7 @@ struct ancilla_parameters
 end
 
 
-function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
+function get_qubit_parameters(p::qubit_parameters,t::Float64)
     """
     Function to get the parameters of the system at time t for the qubits
    
@@ -68,17 +69,10 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
     Returns: 
         - parameters at time t:: Tuple
     """
-    # if mode == :T1
-    # Δt = Δ1_0 - p.δ * t
-    # elseif mode == :T2
-    #     Δt = p.V_nn
-    # elseif mode == :T3
-    #     Δt = Δ1_0 - p.δ * t
-    # else
-    #     throw(ArgumentError("Invalid mode! Choose from `:T1`, `:T2`, `:T3`"))
-    # end
-    # return [p.Ω, p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
-    return [p.Ω, p.Ω, p.Ω]
+
+    Δt = Δ1_0 - p.δ * t
+
+    return [p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
 end
 
 #Lindbald Operators
@@ -110,30 +104,6 @@ function lindbaldian_decay(γ_Decay::Float64,site::Array)
     return C
 end
 
-# function mode1()
-
-#     basis = NLevelBasis(2)
-#     n = transition(basis,2,2)
-#     σx = transition(basis,1,2) + transition(basis,2,1)
-
-#     σx_a = full_operator(σx, total_qubits, [1])
-#     σx_b = full_operator(σx, total_qubits, [2])
-#     σx_c = full_operator(σx, total_qubits, [3])
-
-#     n_a = full_operator(n,total_qubits, [1])
-#     n_c = full_operator(n, total_qubits, [3])
-
-#     nn_ab = full_operator(n, total_qubits, [1,2])
-#     nn_bc = full_operator(n, total_qubits, [2,3])
-
-#     p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
-
-#     coeff = [t->get_qubit_parameters(p,t,:T1)]
-#     tspan = [0.0:1:T_optimal;]
-#     H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:3],[σx_a, σx_b, σx_c, n_a, n_c, nn_ab, nn_bc])
-
-#     return coeff, H
-# end
 
 basis = NLevelBasis(2)
 n = transition(basis,2,2)
@@ -151,10 +121,10 @@ nn_bc = full_operator(n, total_qubits, [2,3])
 
 p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 
-const coeff = [t->get_qubit_parameters(p,t,:T1)]
-tspan = [0.0:1:T_optimal;]
-# const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:7],[σx_a, σx_b, σx_c, n_a, n_c, nn_ab, nn_bc])
-const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:3],[σx_a, σx_b, σx_c])
+const coeff = [t->get_qubit_parameters(p,t)]
+const tspan = [0.0:1:T_optimal;]
+const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+
 
 function Ht(t)
     for i=1:length(H.factors)
@@ -164,71 +134,11 @@ function Ht(t)
 end
 
 #Helper function for mcwf_dynamic
-const C = lindbaldian_decay(1e-3,[1,2,3])
+const C = lindbaldian_decay(1e-3,[1,3])
 const Cdagger = [adjoint(c) for c in C]
 
 function f(t,ψ)
-    # coeff, H = mode1()
     H = Ht(t)
     return H, C, Cdagger
 end
-
-
-# function get_ancilla_parameters(p::ancilla_parameters,t::Float64)
-#     """
-#     Function to get the parameters of the system at time t for the ancillas
-#     such that ti<=t<=tf, where
-#         - ti=T3: start time of the pulse for the ancillas
-#         - tf=T4: end time of the pulse for the ancillas
-
-#     Parameters: 
-#         - time t:: Float64
-
-#     Returns: 
-#         - parameters at time t:: Tuple
-#     """
-#     Δt = Δ2_0 - p.δ * t
-#     return [Δt, p.Ω, p.γ_Decay,p.γ_dephase, p.V_nn]
-# end
-
-
-
-
-# #Hamiltonians
-# function hamiltonian1(p::NTuple)
-#     """
-#     Function to calculate the Hamiltonian for the driving the qubits A-B-C at time t such that
-#     ti<=t<=tf, where
-#         - ti=0: start time of the pulse for the qubits A-B-C
-#         - tf=T1: end time of the pulse for the qubits A-B-C
-
-#     Parameters:
-#         - p:: qubit_parameters
-#         - t:: Float64
-
-#     Returns:
-#         - H:: Matrix : Hamiltonian at time t
-#     """
-#     Δ_t, Ω, γ_Decay, γ_dephase, V_nn = p
-    
-#     basis = NLevelBasis(2)
-#     n = transition(basis,2,2)
-#     σx = transition(basis,1,2) + transition(basis,2,1)
-
-#     σx_a = full_operator(σx, total_qubits, [1])
-#     σx_b = full_operator(σx, total_qubits, [2])
-#     σx_c = full_operator(σx, total_qubits, [3])
-
-#     n_a = full_operator(n,total_qubits, [1])
-#     n_c = full_operator(n, total_qubits, [3])
-
-#     nn_ab = full_operator(n, total_qubits, [1,2])
-#     nn_bc = full_operator(n, total_qubits, [2,3])
-
-#     H = sparse(Ω/2 .* (σx_a + σx_b + σx_c))
-#     # H = sparse(Ω/2 .* (σx_a + σx_c) .+ Δ_t .* (n_a + n_c) .+ V_nn .* (nn_ab + nn_bc))
-
-#     return H
-# end
-
 
