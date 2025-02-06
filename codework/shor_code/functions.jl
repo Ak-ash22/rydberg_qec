@@ -1,5 +1,5 @@
 include("system_params.jl")
-
+include("dependencies.jl")
 const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T_optimal = unpack_params()
 
 ##Helper Functions 
@@ -23,6 +23,7 @@ function full_operator(gate, total_qubits, sites)
 
     # Create an identity operator for each qubit
     identity = transition(NLevelBasis(2), 1,1) + transition(NLevelBasis(2), 2,2)
+    identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
     identity_ops = [identity for _ in 1:total_qubits]
     
     # Replace the identity operator at site `i` with the provided gate
@@ -90,7 +91,10 @@ function lindbaldian_decay(γ_Decay::Float64,site::Array)
     """
     basis = NLevelBasis(2)
     σ_minus = transition(basis,1,2)
+    σ_minus = Operator(σ_minus.basis_l, σ_minus.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σ_minus.data))
+
     identity = transition(basis,1,1) + transition(basis,2,2)
+    identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
     C = Vector{Operator}(undef, total_qubits)
     
     for i in 1:total_qubits
@@ -107,7 +111,10 @@ end
 
 basis = NLevelBasis(2)
 n = transition(basis,2,2)
+n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
+
 σx = transition(basis,1,2) + transition(basis,2,1)
+σx = Operator(σx.basis_l, σx.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σx.data))
 
 σx_a = full_operator(σx, total_qubits, [1])
 σx_b = full_operator(σx, total_qubits, [2])
@@ -122,7 +129,7 @@ nn_bc = full_operator(n, total_qubits, [2,3])
 p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 
 const coeff = [t->get_qubit_parameters(p,t)]
-const tspan = [0.0:1:T_optimal;]
+const tspan = [0.0:0.1:T_optimal;]
 const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
 
 
