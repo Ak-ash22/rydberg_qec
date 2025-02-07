@@ -31,7 +31,7 @@ function main(N_trajectories::Int)
 
         @sync Threads.@threads for i in 1:N_trajectories
             local ψt  # Local variable per thread
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e8)
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,dt=1e-2, abstol=1e-6, reltol=1e-4,maxiters=1e9,save_everystep=false)
             ψ[i] = ψt
             print("Trajectory $i/$N_trajectories.\n")
             GC.gc()  # Force garbage collection to prevent memory overflow
