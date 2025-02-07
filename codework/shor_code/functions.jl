@@ -73,8 +73,8 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64)
 
     Δt = Δ1_0 - p.δ * t
 
-    # return [p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
-    return [p.Ω, p.Ω]
+    return [p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
+    # return [p.Ω, p.Ω]
 end
 
 #Lindbald Operators
@@ -131,8 +131,8 @@ p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 
 const coeff = [t->get_qubit_parameters(p,t)]
 const tspan = [0.0:0.1:T_optimal;]
-# const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
-const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:2],[σx_a, σx_c])
+const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+# const H = LazySum([coeff[1](tspan[1])[i] for i ∈ 1:2],[σx_a, σx_c])
 
 
 function Ht(t)
@@ -143,7 +143,7 @@ function Ht(t)
 end
 
 #Helper function for mcwf_dynamic
-const C = lindbaldian_decay(0.0,[1,3])
+const C = lindbaldian_decay(1e-3,[1,3])
 const Cdagger = [adjoint(c) for c in C]
 
 function f(t,ψ)
