@@ -34,19 +34,7 @@ function main(N_trajectories::Int)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=i)
             ψ[i] = ψt
             print("Trajectory $i/$N_trajectories.\n")
-            # GC.gc()  # Force garbage collection to prevent memory overflow
         end
-
-        # ψ_avg = Vector{Ket}(undef, length(tspan))
-       
-        # for j in 1:length(tspan)
-        #     ψ_sum = zero(ψ[1][j])  # Initialize sum with a zero matrix of the same type
-        #     for i in 1:N_trajectories
-        #         ψ_sum .+= ψ[i][j]  # Sum all wavefunctions at time step j
-        #     end
-        #     ψ_avg[j] = ψ_sum  # Compute the average
-        # end
-        # println("Averaged wavefunctions computation complete.")
 
         m = length(tspan)
         l = N_trajectories
@@ -59,13 +47,6 @@ function main(N_trajectories::Int)
             ρ_avg[j] = ρ_sum / N_trajectories
         end
     end
-
-    # ρ_avg = Vector{Matrix}(undef, length(tspan))
-
-    # for i in 1:length(tspan)
-    #     ρ_avg[i] = (ψ_avg[i].data * ψ_avg[i].data') ./ N_trajectories
-    #     # ρ_avg[i] ./= tr(ρ_avg[i])
-    # end
 
     println("Simulation complete. Saving data...")
     @save "$(data_folder)/mcwf_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" ρ_avg 

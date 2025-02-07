@@ -30,7 +30,7 @@ function main()
 
         println("Simulation complete. Saving data...")
     end
-    @save "$(data_folder)/master_γ_decay=$(γ_Decay).jld2" ρt
+    @save "$(data_folder)/5atom_master_γ_decay=$(γ_Decay).jld2" ρt
 end
 
 main()
