@@ -1,6 +1,3 @@
-include("dependencies.jl")
-include("system_params.jl")
-include("functions.jl")
 
 #Saving the output
 script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
@@ -12,7 +9,13 @@ if !isdir(data_folder)
     mkpath(data_folder)
 end
 
-function f(N::Int)
+@everywhere begin
+    include("functions.jl")   
+end
+
+# addprocs(5)
+
+@everywhere function parallel_f(N::Int)
     """
     Main function to run the simulation
     """
@@ -22,7 +25,7 @@ function f(N::Int)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
 
     rng = MersenneTwister(N)
-    rng_state = timeevolution.JumpRNGState(rng)
+    rng_state = timeevolution.JumpRNGState(rng,0.5)
     @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,rng_state=rng_state)
 
     println("Trajectory $N.\n")
@@ -34,6 +37,7 @@ end
 function main(N_trajectories::Int)
 
     println("Running the simulation with N_trajectories = $N_trajectories")
+   
 
     @time begin
 
@@ -47,14 +51,9 @@ function main(N_trajectories::Int)
         population_c = zeros(length(tspan))
         population_ac = zeros(length(tspan))
 
-        ψ = Vector{Vector}(undef, N_trajectories)
-
-        
-        println("Starting the simulation...")
-        @sync Threads.@threads for N in 1:N_trajectories
-            ψt = f(N)
-            ψ[N] = ψt
-        end
+        # Run trajectories in parallel using pmap (multiprocessing)
+        ψ = pmap(parallel_f, 1:N_trajectories; batch_size=10)
+        # Profile.print(format=:flat)
 
         m = length(tspan)
         l = N_trajectories

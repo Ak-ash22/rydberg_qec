@@ -1,4 +1,4 @@
-const n_qubits = 5
+const n_qubits = 15
 const n_ancillas = 0
 const total_qubits = n_qubits + n_ancillas
 
@@ -7,6 +7,7 @@ const r = [0, 1]
 
 const α = 0                 # Coefficient of |g> state
 const β = sqrt(1-α^2)       # Coefficient of |r> state
+
 
 function wavefunction(num_qubits::Int64, α, β, site::Int64)
     """
