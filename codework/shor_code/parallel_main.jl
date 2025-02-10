@@ -5,17 +5,34 @@ include("functions.jl")
 #Saving the output
 script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
 # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-# data_folder = joinpath(script_dir, "shor_code_data/driving_abc_parallel")
-data_folder = joinpath(script_dir, "shor_code_data/driving_abc_atoms")
+data_folder = joinpath(script_dir, "shor_code_data/driving_abc_parallel")
+
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
     mkpath(data_folder)
 end
 
-function main(N_trajectories::Int)
+function f(N::Int)
     """
     Main function to run the simulation
     """
+    ψ0 = initialize_system()
+    
+    full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
+    ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
+
+    rng = MersenneTwister(N)
+    rng_state = timeevolution.JumpRNGState(rng)
+    @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,rng_state=rng_state)
+
+    println("Trajectory $N.\n")
+        
+    return ψt
+end
+
+
+function main(N_trajectories::Int)
+
     println("Running the simulation with N_trajectories = $N_trajectories")
 
     @time begin
@@ -26,27 +43,19 @@ function main(N_trajectories::Int)
         n_c = full_operator(k, total_qubits, [3])
         n_ac = full_operator(k, total_qubits, [1,3])
 
-        ψ0 = initialize_system()
-        println("The system has been initialized.")
-
-        full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
-        ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
-
-        ψ = Vector{Vector}(undef, N_trajectories)
-
         population_a = zeros(length(tspan))
         population_c = zeros(length(tspan))
         population_ac = zeros(length(tspan))
 
-        println("Starting the simulation...")
+        ψ = Vector{Vector}(undef, N_trajectories)
 
-        @sync Threads.@threads for i in 1:N_trajectories
-            # local ψt  # Local variable per thread
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9)
-            ψ[i] = ψt
-            println("Trajectory $i/$N_trajectories.\n")
-        end
         
+        println("Starting the simulation...")
+        @sync Threads.@threads for N in 1:N_trajectories
+            ψt = f(N)
+            ψ[N] = ψt
+        end
+
         m = length(tspan)
         l = N_trajectories
         ρ_avg = Vector{Matrix}(undef,m)
