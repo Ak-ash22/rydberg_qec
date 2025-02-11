@@ -9,8 +9,6 @@ if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
     mkpath(data_folder)
 end
-
-
 function main(N_trajectories::Int)
     """
     Main function to run the simulation
