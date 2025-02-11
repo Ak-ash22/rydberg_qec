@@ -12,5 +12,4 @@
 
 id=${SLURM_ARRAY_TASK_ID}
 
-module load julia
-julia main.jl ${id}
+julia -t auto main.jl ${id}
