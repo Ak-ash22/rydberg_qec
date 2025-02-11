@@ -1,5 +1,3 @@
-include("dependencies.jl")
-include("system_params.jl")
 include("functions.jl")
 
 #Saving the output
@@ -40,7 +38,7 @@ function main(N_trajectories::Int)
 
         println("Starting the simulation...")
 
-        @sync Threads.@threads for i in 1:N_trajectories
+        @sync for i in 1:N_trajectories
             # local ψt  # Local variable per thread
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9)
             ψ[i] = ψt
