@@ -1,72 +1,53 @@
 include("functions.jl")
 
 #Saving the output
-script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
+script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data"
 # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
 # data_folder = joinpath(script_dir, "shor_code_data/driving_abc_parallel")
-data_folder = joinpath(script_dir, "shor_code_data/driving_abc_atoms")
+data_folder = joinpath(script_dir, "driving_abc_atoms")
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
     mkpath(data_folder)
 end
 
+
 function main(N_trajectories::Int)
     """
     Main function to run the simulation
     """
-    println("Running the simulation with N_trajectories = $N_trajectories")
+    println("Running the simulation for $N_trajectories")
 
-    @time begin
+    start_time = time()
 
-        basis = NLevelBasis(2)
-        k = transition(basis,2,2)
-        n_a = full_operator(k,total_qubits, [1])
-        n_c = full_operator(k, total_qubits, [3])
-        n_ac = full_operator(k, total_qubits, [1,3])
+    basis = NLevelBasis(2)
+    k = transition(basis,2,2)
+    n_a = full_operator(k,total_qubits, [1])
+    n_c = full_operator(k, total_qubits, [3])
+    n_ac = full_operator(k, total_qubits, [1,3])
 
-        ψ0 = initialize_system()
-        println("The system has been initialized.")
+    ψ0 = initialize_system()
+    println("The system has been initialized.")
 
-        full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
-        ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
+    full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
+    ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
 
-        ψ = Vector{Vector}(undef, N_trajectories)
+    println("Starting the simulation...")
 
-        population_a = zeros(length(tspan))
-        population_c = zeros(length(tspan))
-        population_ac = zeros(length(tspan))
+    @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=N_trajectories)
+  
+    println("Trajectory $N_trajectories.\n")
+    
+    population_a = real(expect(n_a, ψt))
+    population_c = real(expect(n_c, ψt))
+    population_ac = real(expect(n_ac, ψt))
 
-        println("Starting the simulation...")
-
-        @sync for i in 1:N_trajectories
-            # local ψt  # Local variable per thread
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9)
-            ψ[i] = ψt
-            println("Trajectory $i/$N_trajectories.\n")
-        end
-        
-        m = length(tspan)
-        l = N_trajectories
-        ρ_avg = Vector{Matrix}(undef,m)
-        for j in 1:m
-            ρ_sum = zero(ψ[1][j].data * ψ[1][j].data')  # Initialize sum with a zero matrix of the same type
-            for i in 1:l
-                ρ_sum .+= (ψ[i][j].data * ψ[i][j].data')
-            end
-            ρ_avg[j] = ρ_sum / N_trajectories
-        end
-
-        for i in 1:length(tspan)
-            population_a[i] = real(tr(n_a.data*ρ_avg[i]))
-            population_c[i] = real(tr(n_c.data*ρ_avg[i]))
-            population_ac[i] = real(tr(n_ac.data*ρ_avg[i]))
-        end
-    end
+    end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" ψ population_a population_c population_ac
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac end_time
     println("Data saved.")
 end
+
 
 # --- Parse command-line arguments ---
 if abspath(PROGRAM_FILE) == @__FILE__
