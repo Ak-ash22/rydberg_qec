@@ -1,14 +1,15 @@
 include("functions.jl")
 
 #Saving the output
-script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data"
-# script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-# data_folder = joinpath(script_dir, "shor_code_data/driving_abc_parallel")
-data_folder = joinpath(script_dir, "driving_abc_atoms")
+script_dir = "/scratch/roq68sum/shor_code_data"
+
+data_folder = joinpath(script_dir, "driving_abc")
+
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
     mkpath(data_folder)
 end
+
 function main(N_trajectories::Int)
     """
     Main function to run the simulation
