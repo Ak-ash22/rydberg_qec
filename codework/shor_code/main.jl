@@ -1,5 +1,6 @@
-# include("functions.jl")
+include("functions.jl")
 
+println(total_qubits)
 #Saving the output
 # script_dir = "/scratch/roq68sum/shor_code_data"
 
