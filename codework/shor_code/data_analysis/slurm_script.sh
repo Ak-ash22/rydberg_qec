@@ -9,4 +9,4 @@
 #SBATCH -p idle
 #SBATCH --mail-type=FAIL,END
 
-~/julia-1.11.3/bin/julia analysis.jl
+~/julia-1.11.3/bin/julia analysis_1000.jl
