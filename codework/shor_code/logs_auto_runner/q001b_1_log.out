@@ -1,0 +1,8 @@
+Running the simulation for 1
+The system has been initialized.
+Starting the simulation...
+  5.733015 seconds (13.04 M allocations: 680.742 MiB, 3.60% gc time, 84.37% compilation time)
+Trajectory 1.
+
+Simulation complete. Saving data...
+Data saved.

@@ -1,0 +1,137 @@
+Precompiling project...
+   7681.4 ms  ✓ Pipe
+  10126.3 ms  ✓ LaTeXStrings
+   9918.4 ms  ✓ SimpleBufferStream
+   8732.5 ms  ✓ BitFlags
+  10207.1 ms  ✓ Contour
+  10089.6 ms  ✓ Measures
+   9971.3 ms  ✓ URIs
+  10925.9 ms  ✓ Grisu
+  10708.3 ms  ✓ Format
+   3046.8 ms  ✓ TensorCore
+   7876.8 ms  ✓ StableRNGs
+   7864.5 ms  ✓ CodecZlib
+   7829.4 ms  ✓ DelimitedFiles
+   7873.3 ms  ✓ Unzip
+   6845.0 ms  ✓ Showoff
+   8224.4 ms  ✓ ConcurrentUtilities
+  10230.6 ms  ✓ FixedPointNumbers
+   5478.2 ms  ✓ Scratch
+   2980.8 ms  ✓ ExceptionUnwrapping
+   3095.0 ms  ✓ LoggingExtras
+   3367.6 ms  ✓ Xorg_libICE_jll
+   3563.0 ms  ✓ OpenSSL_jll
+   3232.2 ms  ✓ Libffi_jll
+   3104.6 ms  ✓ Wayland_protocols_jll
+   3299.7 ms  ✓ LLVMOpenMP_jll
+   3459.7 ms  ✓ fzf_jll
+   3356.4 ms  ✓ Ogg_jll
+   3716.8 ms  ✓ JpegTurbo_jll
+   3338.4 ms  ✓ mtdev_jll
+   3454.6 ms  ✓ x265_jll
+   9346.7 ms  ✓ UnicodeFun
+   3441.0 ms  ✓ x264_jll
+   3465.4 ms  ✓ Libiconv_jll
+   3093.5 ms  ✓ EpollShim_jll
+   3405.8 ms  ✓ FriBidi_jll
+   3393.6 ms  ✓ Graphite2_jll
+   9546.2 ms  ✓ ColorTypes
+   3095.5 ms  ✓ Xorg_libXau_jll
+   3417.9 ms  ✓ libpng_jll
+   3649.0 ms  ✓ LAME_jll
+   3367.7 ms  ✓ Xorg_libXdmcp_jll
+   3399.7 ms  ✓ libaom_jll
+   3510.7 ms  ✓ Zstd_jll
+   3425.0 ms  ✓ Expat_jll
+   3235.3 ms  ✓ LZO_jll
+   3241.9 ms  ✓ Opus_jll
+   3224.1 ms  ✓ Xorg_xtrans_jll
+   3370.9 ms  ✓ Libmount_jll
+   3371.5 ms  ✓ Bzip2_jll
+   3147.4 ms  ✓ libfdk_aac_jll
+   3366.6 ms  ✓ LERC_jll
+   3257.1 ms  ✓ gperf_jll
+   3243.6 ms  ✓ libevdev_jll
+   3932.4 ms  ✓ XZ_jll
+   3443.8 ms  ✓ Libgpg_error_jll
+   2458.7 ms  ✓ RelocatableFolders
+   3265.9 ms  ✓ Xorg_libpthread_stubs_jll
+   3216.4 ms  ✓ Libuuid_jll
+   3665.9 ms  ✓ Xorg_libSM_jll
+   6486.3 ms  ✓ MbedTLS
+   4300.9 ms  ✓ Pixman_jll
+   3905.9 ms  ✓ libvorbis_jll
+   3853.3 ms  ✓ XML2_jll
+   3879.6 ms  ✓ ColorTypes → StyledStringsExt
+   7300.0 ms  ✓ JLFzf
+   3640.9 ms  ✓ Dbus_jll
+   3724.4 ms  ✓ FreeType2_jll
+   3997.4 ms  ✓ eudev_jll
+  12582.6 ms  ✓ OpenSSL
+   4243.5 ms  ✓ Libtiff_jll
+  18042.6 ms  ✓ Latexify
+   4472.1 ms  ✓ Libgcrypt_jll
+   4743.2 ms  ✓ Gettext_jll
+   5515.4 ms  ✓ Wayland_jll
+  14490.7 ms  ✓ ColorVectorSpace
+   5737.2 ms  ✓ Fontconfig_jll
+   4198.9 ms  ✓ libinput_jll
+   5009.2 ms  ✓ Latexify → SparseArraysExt
+   3872.7 ms  ✓ XSLT_jll
+   3494.0 ms  ✓ ColorVectorSpace → SpecialFunctionsExt
+   4018.0 ms  ✓ Glib_jll
+   4381.8 ms  ✓ Xorg_libxcb_jll
+   3264.8 ms  ✓ Xorg_xcb_util_jll
+   3394.1 ms  ✓ Xorg_libX11_jll
+  27863.3 ms  ✓ Colors
+   4314.6 ms  ✓ Xorg_xcb_util_keysyms_jll
+   4237.2 ms  ✓ Xorg_xcb_util_image_jll
+   4153.2 ms  ✓ Xorg_libXrender_jll
+   4370.6 ms  ✓ Xorg_xcb_util_renderutil_jll
+   4331.3 ms  ✓ Xorg_xcb_util_wm_jll
+   3631.1 ms  ✓ Xorg_libXext_jll
+   3711.3 ms  ✓ Xorg_libxkbfile_jll
+   3850.2 ms  ✓ Xorg_libXfixes_jll
+   3821.4 ms  ✓ Xorg_xcb_util_cursor_jll
+   5279.4 ms  ✓ SparseMatrixColorings → SparseMatrixColoringsColorsExt
+   3750.3 ms  ✓ Xorg_libXinerama_jll
+   3774.9 ms  ✓ Xorg_libXrandr_jll
+   4541.6 ms  ✓ Libglvnd_jll
+   5070.0 ms  ✓ Cairo_jll
+   3710.8 ms  ✓ Xorg_xkbcomp_jll
+   3590.9 ms  ✓ Xorg_libXcursor_jll
+   3329.3 ms  ✓ Xorg_libXi_jll
+   2665.6 ms  ✓ Xorg_xkeyboard_config_jll
+   3458.4 ms  ✓ HarfBuzz_jll
+   3494.7 ms  ✓ xkbcommon_jll
+   4114.3 ms  ✓ libass_jll
+   4374.7 ms  ✓ Pango_jll
+   4555.4 ms  ✓ Vulkan_Loader_jll
+  20405.9 ms  ✓ ColorSchemes
+   5123.5 ms  ✓ libdecor_jll
+   7047.8 ms  ✓ FFMPEG_jll
+   6780.7 ms  ✓ Qt6Base_jll
+   5033.8 ms  ✓ GLFW_jll
+   4786.4 ms  ✓ FFMPEG
+   5125.7 ms  ✓ Qt6ShaderTools_jll
+   5608.4 ms  ✓ GR_jll
+  98696.5 ms  ✓ Unitful
+   7882.0 ms  ✓ Qt6Declarative_jll
+   3899.4 ms  ✓ Unitful → InverseFunctionsUnitfulExt
+   3903.2 ms  ✓ Unitful → ConstructionBaseUnitfulExt
+   4099.8 ms  ✓ Accessors → UnitfulExt
+   4660.0 ms  ✓ Qt6Wayland_jll
+   7270.9 ms  ✓ DiffEqBase → DiffEqBaseUnitfulExt
+   8338.5 ms  ✓ UnitfulLatexify
+ 106215.9 ms  ✓ Parsers
+  97088.0 ms  ✓ HTTP
+  58559.6 ms  ✓ PlotUtils
+   9504.5 ms  ✓ JSON
+   4164.0 ms  ✓ FileIO → HTTPExt
+   7755.4 ms  ✓ PlotThemes
+  11545.0 ms  ✓ GR
+  11500.0 ms  ✓ RecipesPipeline
+  84983.1 ms  ✓ Plots
+   7047.8 ms  ✓ Plots → FileIOExt
+   7404.8 ms  ✓ Plots → UnitfulExt
+  135 dependencies successfully precompiled in 262 seconds. 365 already precompiled.

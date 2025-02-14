@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #SBATCH -J q001b
-#SBATCH -o logs_auto_runner/%x_log.out
-#SBATCH -e logs_auto_runner/%x_log.err
+#SBATCH -o logs_auto_runner/%x_%a_log.out
+#SBATCH -e logs_auto_runner/%x_%a_log.err
 #SBATCH --cpus-per-task=1
-#SBATCH --time=200:00:00
-#SBATCH --mem-per-cpu=8G
-#SBATCH -p epyc-256
+#SBATCH --time=20:00:00
+#SBATCH --mem-per-cpu=4G
+#SBATCH -p idle
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=1-1000
+#SBATCH --array=1
 
-id=${SLURM_ARRAY_TASK_ID}
+id=$SLURM_ARRAY_TASK_ID
 
-julia main.jl ${id}
+~/julia-1.11.3/bin/julia main.jl $id
