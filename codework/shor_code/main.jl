@@ -31,14 +31,23 @@ function main(N_trajectories::Int)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
 
     println("Starting the simulation...")
+    
+    population_a = zeros(length(tspan))
+    population_c = zeros(length(tspan))
+    population_ac = zeros(length(tspan))
 
-    @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=N_trajectories)
-  
+    for i in 1:10
+        @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*100 + i))
+        population_a .+= real(expect(n_a, ψt))
+        population_c .+= real(expect(n_c, ψt))
+        population_ac .+= real(expect(n_ac, ψt))
+    end
+
     println("Trajectory $N_trajectories.\n")
     
-    population_a = real(expect(n_a, ψt))
-    population_c = real(expect(n_c, ψt))
-    population_ac = real(expect(n_ac, ψt))
+    population_a .*= 1/10
+    population_c .*= 1/10
+    population_ac .*= 1/10
 
     end_time = time() - start_time
 
