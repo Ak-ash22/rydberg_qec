@@ -1,9 +1,9 @@
 include("functions.jl")
 
 # Saving the output
-# script_dir = "/scratch/roq68sum/shor_code_data"
-data_folder = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework/shor_code/"
-# data_folder = joinpath(script_dir, "driving_abc")
+script_dir = "/scratch/roq68sum/shor_code_data"
+
+data_folder = joinpath(script_dir, "driving_abc")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
