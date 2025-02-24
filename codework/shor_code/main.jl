@@ -1,14 +1,14 @@
 include("functions.jl")
 
 # Saving the output
-# script_dir = "/scratch/roq68sum/shor_code_data"
+script_dir = "/scratch/roq68sum/shor_code_data"
 
-# data_folder = joinpath(script_dir, "driving_abc")
+data_folder = joinpath(script_dir, "driving_abc12")
 
-# if !isdir(data_folder)
-#     println("Directory does not exist. Creating directory...: $data_folder")
-#     mkpath(data_folder)
-# end
+if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -37,7 +37,7 @@ function main(N_trajectories::Int)
     population_ac = zeros(length(tspan))
 
     ψ = Vector{Vector{Ket}}(undef,10)
-    for i in 1:1
+    for i in 1:10
         @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*100 + i))
         ψ[i] = ψt
         population_a .+= real(expect(n_a, ψt))
@@ -78,7 +78,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete in $(end_time). Saving data...")
-    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac ρ_avg end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac end_time
     println("Data saved.")
 end
 

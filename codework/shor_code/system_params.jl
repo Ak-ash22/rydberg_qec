@@ -1,4 +1,4 @@
-const n_qubits = 3
+const n_qubits = 5
 const n_ancillas = 0
 const total_qubits = n_qubits + n_ancillas
 
