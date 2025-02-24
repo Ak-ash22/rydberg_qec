@@ -1,14 +1,14 @@
 include("functions.jl")
 
 # Saving the output
-script_dir = "/scratch/roq68sum/shor_code_data"
+# script_dir = "/scratch/roq68sum/shor_code_data"
 
-data_folder = joinpath(script_dir, "driving_abc")
+# data_folder = joinpath(script_dir, "driving_abc")
 
-if !isdir(data_folder)
-    println("Directory does not exist. Creating directory...: $data_folder")
-    mkpath(data_folder)
-end
+# if !isdir(data_folder)
+#     println("Directory does not exist. Creating directory...: $data_folder")
+#     mkpath(data_folder)
+# end
 
 function main(N_trajectories::Int)
     """
@@ -33,12 +33,12 @@ function main(N_trajectories::Int)
     println("Starting the simulation...")
     
     population_a = zeros(length(tspan))
-    population_c = zeros(length(tspan))
+    population_c = zeros(length(tspan)) 
     population_ac = zeros(length(tspan))
 
     ψ = Vector{Vector{Ket}}(undef,10)
     
-    for i in 1:10
+    for i in 1:1
         @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*100 + i))
         ψ[i] = ψt
         population_a .+= real(expect(n_a, ψt))
@@ -59,16 +59,16 @@ function main(N_trajectories::Int)
     # end
 
 
-    m = length(tspan)
-    l = 10
-    ρ_avg = Vector{Matrix}(undef,m)
-    for j in 1:m
-        ρ_sum = zero(ψ[1][j].data * ψ[1][j].data')  # Initialize sum with a zero matrix of the same type
-        for i in 1:l
-            ρ_sum .+= (ψ[i][j].data * ψ[i][j].data')
-        end
-        ρ_avg[j] = ρ_sum / N_trajectories
-    end
+    # m = length(tspan)
+    # l = 10
+    # ρ_avg = Vector{Matrix}(undef,m)
+    # for j in 1:m
+    #     ρ_sum = zero(ψ[1][j].data * ψ[1][j].data')  # Initialize sum with a zero matrix of the same type
+    #     for i in 1:l
+    #         ρ_sum .+= (ψ[i][j].data * ψ[i][j].data')
+    #     end
+    #     ρ_avg[j] = ρ_sum / N_trajectories
+    # end
 
     println("Trajectory $N_trajectories.\n")
     
@@ -78,8 +78,8 @@ function main(N_trajectories::Int)
 
     end_time = time() - start_time
 
-    println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac ρ_avg end_time
+    println("Simulation complete in $(end_time). Saving data...")
+    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac ρ_avg end_time
     println("Data saved.")
 end
 
