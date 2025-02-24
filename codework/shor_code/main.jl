@@ -37,7 +37,6 @@ function main(N_trajectories::Int)
     population_ac = zeros(length(tspan))
 
     ψ = Vector{Vector{Ket}}(undef,10)
-    
     for i in 1:1
         @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*100 + i))
         ψ[i] = ψt

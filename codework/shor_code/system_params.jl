@@ -1,5 +1,5 @@
-const n_qubits = 9
-const n_ancillas = 6
+const n_qubits = 3
+const n_ancillas = 0
 const total_qubits = n_qubits + n_ancillas
 
 const g = [1, 0]
@@ -70,9 +70,9 @@ function params()
         # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
         # :Δ2_0 => 1032.0,        # Detuning at t=0 for ancillas
-        :T1 => 154.0     # Evolution time for step 1
-        # :T2 => 582.0     # Evolution time for step 2
-        # :T3 => 582.0     # Evolution time for step 3
+        :T1 => 154.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
+        :T2 => round(154.0+pi/2)     # Evolution time for step 2
+        # :T3 => T2+154.0     # Evolution time for step 3
         # :T4 => 582.0     # Evolution time for step 4
         # :T5 => 582.0     # Evolution time for step 5  -- for phase flip error syndrome
         # :T6 => 582.0     # Evolution time for step 6  -- for phase flip error syndrome
@@ -84,5 +84,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:T1]
+    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:T1], p[:T2]
 end
