@@ -9,4 +9,4 @@
 #SBATCH -p physik-fleischhauer
 #SBATCH --mail-type=FAIL,END
 
-~/julia-1.11.3/bin/julia analysis_1000.jl
+~/julia-1.11.3/bin/julia full_analysis_1000.jl

@@ -2,8 +2,8 @@ using JLD2
 
 function average_populations()
     # Path to files
-    base_path = "/scratch/roq68sum/shor_code_data/driving_abc12/"
-    file_pattern = "N_atoms=3_γ_decay=0.001_Ntraj="
+    base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
+    file_pattern = "N_atoms=9_γ_decay=0.001_Ntraj="
 
     num_files = 100  # Since Ntraj goes from 1 to 100
 
@@ -38,7 +38,7 @@ function average_populations()
     population_ac_avg = population_ac_total ./ num_files
 
     # Save final lists
-    final_file_path = base_path * "N_atoms=3_γ_decay=0.001_Ntraj=1000_avg.jld2"
+    final_file_path = base_path * "N_atoms=9_γ_decay=0.001_Ntraj=1000_avg.jld2"
     @save final_file_path population_a_avg population_c_avg population_ac_avg
 
     println("Averaged populations saved to ", final_file_path)
