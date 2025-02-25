@@ -189,7 +189,7 @@ function Ht(t)
     end
 end
 
-const tspan = [0.0:0.1:T2;]
+const tspan = [T1:0.1:T2;]
 
 #Helper function for mcwf_dynamic
 const C = lindbaldian_decay(1e-3,[1,3])
