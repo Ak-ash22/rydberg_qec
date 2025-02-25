@@ -71,7 +71,7 @@ function params()
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
         # :Δ2_0 => 1032.0,        # Detuning at t=0 for ancillas
         :T1 => 154.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
-        :T2 => round(154.0+pi/2)     # Evolution time for step 2
+        :T2 => 154.0+pi/2     # Evolution time for step 2
         # :T3 => T2+154.0     # Evolution time for step 3
         # :T4 => 582.0     # Evolution time for step 4
         # :T5 => 582.0     # Evolution time for step 5  -- for phase flip error syndrome
