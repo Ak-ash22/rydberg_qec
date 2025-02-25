@@ -1,9 +1,0 @@
-Running the simulation for 1
-The system has been initialized.
-Starting the simulation...
-  5.809744 seconds (13.04 M allocations: 681.111 MiB, 11.89% gc time, 85.47% compilation time)
-Simulation complete. Calculating the average wavefunction...
-Trajectory 1.
-
-Simulation complete in 6.12970495223999. Saving data...
-Data saved.

@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
-#SBATCH -p idle
+#SBATCH -p physik-fleischhauer
 #SBATCH --mail-type=FAIL,END
 
 ~/julia-1.11.3/bin/julia analysis_1000.jl

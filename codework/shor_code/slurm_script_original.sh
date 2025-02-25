@@ -3,12 +3,12 @@
 #SBATCH -J q001b
 #SBATCH -o logs_auto_runner/%x_%a_log.out
 #SBATCH -e logs_auto_runner/%x_%a_log.err
-#SBATCH --cpus-per-task=18
+#SBATCH --cpus-per-task=8
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
-#SBATCH -p physik-fleischhauer
+#SBATCH -p idle
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=1
+#SBATCH --array=1-100
 
 id=$SLURM_ARRAY_TASK_ID
 
