@@ -3,12 +3,12 @@
 #SBATCH -J q001b
 #SBATCH -o logs_auto_runner/%x_%a_log.out
 #SBATCH -e logs_auto_runner/%x_%a_log.err
-#SBATCH --cpus-per-task=2
+#SBATCH --cpus-per-task=4
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
 #SBATCH -p idle
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=1-100
+#SBATCH --array=1
 
 id=$SLURM_ARRAY_TASK_ID
 
