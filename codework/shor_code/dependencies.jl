@@ -1,5 +1,5 @@
-# using Pkg
-# Pkg.precompile()
+using Pkg
+Pkg.precompile()
 
 using DifferentialEquations
 using LinearAlgebra
