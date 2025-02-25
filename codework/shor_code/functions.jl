@@ -170,12 +170,10 @@ const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
 const tspan2 = [T1:0.1:T2;]
 const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n_c, nn_ab, nn_bc])
 
-# const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-# const tspan3 = [T2:0.1:T3;]
-# const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
+const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
+const tspan3 = [T2:0.1:T3;]
+const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
 
-# const H = LazySum([H1,H2,H3])
-# const H = H1 + H2
 
 function Ht(t)
     if t<T1 || t==T1
@@ -201,14 +199,14 @@ function Ht(t)
     end
 end
 
-const tspan = [0.0:0.1:T1;]
+const tspan = [0.0:0.1:T3;]
 
 #Helper function for mcwf_dynamic
 const C1 = lindbaldian_decay(1e-3,[1,3])
 const Cdagger1 = [adjoint(c) for c in C1]
 
-# const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
-# const Cdagger3 = [adjoint(c) for c in C3]
+const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
+const Cdagger3 = [adjoint(c) for c in C3]
 
 function Ct(t)
     if t<T1 || t==T1

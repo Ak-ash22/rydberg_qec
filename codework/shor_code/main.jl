@@ -1,14 +1,14 @@
 include("functions.jl")
 
-# # Saving the output
-# script_dir = "/scratch/roq68sum/shor_code_data"
+# Saving the output
+script_dir = "/scratch/roq68sum/shor_code_data"
 
-# data_folder = joinpath(script_dir, "driving_abc12")
+data_folder = joinpath(script_dir, "driving_abc12")
 
-# if !isdir(data_folder)
-#     println("Directory does not exist. Creating directory...: $data_folder")
-#     mkpath(data_folder)
-# end
+if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -64,8 +64,8 @@ function main(N_trajectories::Int)
 
     end_time = time() - start_time
 
-    # output_file = joinpath(data_folder, "N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2")
-    # @save output_file population_data end_time
+    output_file = joinpath(data_folder, "N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2")
+    @save output_file population_data end_time
 
     println("Data saved successfully!")
 end
