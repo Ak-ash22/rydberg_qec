@@ -74,13 +74,13 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
     Δt = Δ1_0 - p.δ * t
     @assert mode in [:T1, :T2, :T3] "Invalid mode selected"
     if mode == :T1
-        return [p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
+        return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
 
     elseif mode == :T2
-        return [p.Ω, p.Ω, -p.V_nn, -p.V_nn, p.V_nn, p.V_nn]
+        return [p.Ω/2, p.Ω/2, -p.V_nn, -p.V_nn, p.V_nn, p.V_nn]
 
     elseif mode == :T3
-        return [p.Ω, p.Ω, p.Ω, p.Ω, p.Ω, p.Ω, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
+        return [p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
     end
 
 end
