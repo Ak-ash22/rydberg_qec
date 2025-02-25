@@ -40,10 +40,9 @@ function main(N_trajectories::Int)
     
     println("Starting the simulation...")
 
-    ψ = Vector{Vector{Ket}}(undef,10)
     for i in 1:10
         @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*100 + i))
-        ψ[i] = ψt
+
         population_data[:a] .+= real(expect(n_a, ψt))
         population_data[:c] .+= real(expect(n_c, ψt))
         population_data[:p1] .+= real(expect(n_1, ψt))
