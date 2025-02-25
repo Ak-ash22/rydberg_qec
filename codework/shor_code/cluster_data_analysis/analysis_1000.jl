@@ -2,7 +2,7 @@ using JLD2
 
 function average_populations()
     # Path to files
-    base_path = "/scratch/roq68sum/shor_code_data/driving_abc/"
+    base_path = "/scratch/roq68sum/shor_code_data/driving_abc12/"
     file_pattern = "N_atoms=3_γ_decay=0.001_Ntraj="
 
     num_files = 100  # Since Ntraj goes from 1 to 100
