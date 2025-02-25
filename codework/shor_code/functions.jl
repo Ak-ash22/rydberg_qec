@@ -77,7 +77,7 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         return [p.Ω, p.Ω, Δt, Δt, p.V_nn, p.V_nn]
 
     elseif mode == :T2
-        return [p.Ω, p.Ω, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
+        return [p.Ω, p.Ω, -p.V_nn, -p.V_nn, p.V_nn, p.V_nn]
 
     elseif mode == :T3
         return [p.Ω, p.Ω, p.Ω, p.Ω, p.Ω, p.Ω, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
@@ -124,10 +124,15 @@ n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
 
 σx = transition(basis,1,2) + transition(basis,2,1)
 σx = Operator(σx.basis_l, σx.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σx.data))
+σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
 
 σx_a = full_operator(σx, total_qubits, [1])
-σx_b = full_operator(σx, total_qubits, [2])
+# σx_b = full_operator(σx, total_qubits, [2])
 σx_c = full_operator(σx, total_qubits, [3])
+
+σy_a = full_operator(σy, total_qubits, [1])
+# σy_b = full_operator(σy, total_qubits, [2])
+σy_c = full_operator(σy, total_qubits, [3])
 
 n_a = full_operator(n,total_qubits, [1])
 n_c = full_operator(n, total_qubits, [3])
@@ -163,7 +168,7 @@ const H1 = LazySum([coeff1[1](tspan1[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n
 
 const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
 const tspan2 = [T1:0.1:T2;]
-const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n_c, nn_ab, nn_bc])
 
 # const coeff3 = [t->get_qubit_parameters(p,t,T3)]
 # const tspan3 = [2*T_optimal:0.1:3*T3;]
