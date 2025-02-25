@@ -76,7 +76,7 @@ function main(N_trajectories::Int)
     population_ac .*= 1/10
 
     end_time = time() - start_time
-
+    print(length(population_a))
     println("Simulation complete in $(end_time). Saving data...")
     @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_a population_c population_ac end_time
     println("Data saved.")
