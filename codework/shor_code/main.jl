@@ -26,17 +26,7 @@ function main(N_trajectories::Int)
   
     # --- Preallocate Arrays ---
     num_timesteps = length(tspan)
-    population_data = Dict(
-        :a => zeros(num_timesteps),
-        :c => zeros(num_timesteps),
-        :ac => zeros(num_timesteps),
-        :p1 => zeros(num_timesteps),
-        :p2 => zeros(num_timesteps),
-        :p3 => zeros(num_timesteps),
-        :p4 => zeros(num_timesteps),
-        :p5 => zeros(num_timesteps),
-        :p6 => zeros(num_timesteps)
-    )
+    population_data = Dict(key => zeros(num_timesteps) for key in (:a, :c, :p1, :p2, :p3, :p4, :p5, :p6))
     
     println("Starting the simulation...")
 
