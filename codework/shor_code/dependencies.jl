@@ -1,7 +1,9 @@
 # using Pkg
 # Pkg.precompile()
 using LinearAlgebra
-BLAS.set_num_threads(1)
+
+# #Running in dwalin
+# BLAS.set_num_threads(16)
 
 using DifferentialEquations
 using JLD2, FileIO
