@@ -174,7 +174,7 @@ const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n
 const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
 tspan3 = [T2:0.1:T3;]
 # const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
-const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:4],[σx_1, σx_2, n_1, n_2, nn_a1, nn_a2]) 
+const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:6],[σx_3, σx_4, n_3, n_4, nn_b3, nn_b4]) 
 
 function Ht(t)
     if t<T1 || t==T1

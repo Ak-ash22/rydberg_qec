@@ -3,7 +3,7 @@ include("functions.jl")
 # Saving the output
 script_dir = "/scratch/roq68sum/shor_code_data"
 
-data_folder = joinpath(script_dir, "driving_abc9")
+data_folder = joinpath(script_dir, "trial")
 
 if !isdir(data_folder)
    println("Directory does not exist. Creating directory...: $data_folder")

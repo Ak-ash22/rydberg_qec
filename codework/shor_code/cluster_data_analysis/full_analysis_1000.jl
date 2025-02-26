@@ -2,7 +2,8 @@ using JLD2
 
 function average_populations()
     # --- Path to data ---
-    base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
+    # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
+    base_path = "/scratch/roq68sum/shor_code_data/trial/"
     file_pattern = "N_atoms=9_γ_decay=0.001_Ntraj="
 
     num_files = 100  # Number of files to process
