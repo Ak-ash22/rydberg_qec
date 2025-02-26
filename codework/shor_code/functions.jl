@@ -185,14 +185,14 @@ function Ht(t)
         end
         return H1
 
-    elseif t<T2 || t==T2
+    elseif t<(T1+T2) || t==(T1+T2)
         coeffs = coeff2[1](t)
         for i in eachindex(coeffs)
             H2.factors[i] = coeffs[i]
         end
         return H2
 
-    elseif t<T3 || t==T3
+    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
         coeffs = coeff3[1](t)
         for i in eachindex(coeffs)
             H3.factors[i] = coeffs[i]
@@ -212,9 +212,9 @@ const C3 = lindbaldian_decay(1e-3,[1,3,4,5])
 const Cdagger3 = [adjoint(c) for c in C3]
 
 function Ct(t)
-    if t<T2 || t==T2
+    if t<(T1+T2) || t==(T1+T2)
         return C1, Cdagger1
-    elseif t<T3 || t==T3
+    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
         return C3, Cdagger3
     end
 end
