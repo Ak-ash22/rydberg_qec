@@ -80,7 +80,8 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         return [p.Ω/2, p.Ω/2, -p.V_nn, -p.V_nn, p.V_nn, p.V_nn]
 
     elseif mode == :T3
-        return [p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
+        # return [p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
+        return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
     end
 
 end
@@ -172,7 +173,8 @@ const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n
 
 const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
 tspan3 = [T2:0.1:T3;]
-const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
+# const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
+const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:4],[σx_1, σx_2, n_1, n_2, nn_a1, nn_a2]) 
 
 function Ht(t)
     if t<T1 || t==T1
@@ -204,7 +206,8 @@ const tspan = [0.0:0.1:T3;]
 const C1 = lindbaldian_decay(1e-3,[1,3])
 const Cdagger1 = [adjoint(c) for c in C1]
 
-const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
+# const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
+const C3 = lindbaldian_decay(1e-3,[1,3,4,5])    
 const Cdagger3 = [adjoint(c) for c in C3]
 
 function Ct(t)
