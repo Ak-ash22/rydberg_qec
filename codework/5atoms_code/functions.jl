@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T1, T2, T3 = unpack_params()
+const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T1, T2 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, total_qubits, sites)
@@ -77,12 +77,8 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
 
     elseif mode == :T2
-        return [p.Ω/2, p.Ω/2, -p.V_nn, -p.V_nn, p.V_nn, p.V_nn]
-
-    elseif mode == :T3
         Δt = Δ1_0 - p.δ * t
-        # return [p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, p.Ω/2, Δt, Δt, Δt, Δt, Δt, Δt, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
-        return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
+        return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6)]
     end
 
 end
@@ -126,25 +122,18 @@ n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
 
 σx = transition(basis,1,2) + transition(basis,2,1)
 σx = Operator(σx.basis_l, σx.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σx.data))
-σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
 
 σx_a = full_operator(σx, total_qubits, [1])
-# σx_b = full_operator(σx, total_qubits, [2])
 σx_c = full_operator(σx, total_qubits, [3])
-
-σy_a = full_operator(σy, total_qubits, [1])
-# σy_b = full_operator(σy, total_qubits, [2])
-σy_c = full_operator(σy, total_qubits, [3])
-
 const n_a = full_operator(n, total_qubits, [1])
 const n_c = full_operator(n, total_qubits, [3])
-
 nn_ab = full_operator(n, total_qubits, [1,2])
 nn_bc = full_operator(n, total_qubits, [2,3])
 
-p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 
+p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 const tspan = [0.0:0.1:(T1+T2+T3);]
+
 
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
 const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
@@ -152,29 +141,15 @@ const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_
 
 σx_1 = full_operator(σx, total_qubits, [4])
 σx_2 = full_operator(σx, total_qubits, [5])
-σx_3 = full_operator(σx, total_qubits, [6])
-σx_4 = full_operator(σx, total_qubits, [7])
-σx_5 = full_operator(σx, total_qubits, [8])
-σx_6 = full_operator(σx, total_qubits, [9])
 const n_1 = full_operator(n, total_qubits, [4])
 const n_2 = full_operator(n, total_qubits, [5])
-const n_3 = full_operator(n, total_qubits, [6])
-const n_4 = full_operator(n, total_qubits, [7])
-const n_5 = full_operator(n, total_qubits, [8])
-const n_6 = full_operator(n, total_qubits, [9])
 nn_a1 = full_operator(n, total_qubits, [1,4])
-nn_a2 = full_operator(n, total_qubits, [1,5])
-nn_b3 = full_operator(n, total_qubits, [2,6])
-nn_b4 = full_operator(n, total_qubits, [2,7])
-nn_c5 = full_operator(n, total_qubits, [3,8])
-nn_c6 = full_operator(n, total_qubits, [3,9])
+nn_b1 = full_operator(n, total_qubits, [2,4])
+nn_b2 = full_operator(n, total_qubits, [2,5])
+nn_c2 = full_operator(n, total_qubits, [3,5])
 
 const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
-const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n_c, nn_ab, nn_bc])
-
-const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-# const H3 = LazySum([coeff3[1](tspan[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
-const H3 = LazySum([coeff3[1](tspan[1])[i] for i ∈ 1:6],[σx_1, σx_2, n_1, n_2, nn_a1, nn_a2]) 
+const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
 
 function Ht(t)
     if t<T1 || t==T1
@@ -190,31 +165,23 @@ function Ht(t)
             H2.factors[i] = coeffs[i]
         end
         return H2
-
-    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
-        coeffs = coeff3[1](t-T1-T2)
-        for i in eachindex(coeffs)
-            H3.factors[i] = coeffs[i]
-        end
-        return H3
     end
 end
 
 # const tspan = [0.0:0.1:(T1+T2+T3);]
 
 #Helper function for mcwf_dynamic
-const C1 = lindbaldian_decay(1e-3,[1,3])
+const C1 = lindbaldian_decay(1e-3,[1,2,3])
 const Cdagger1 = [adjoint(c) for c in C1]
 
-# const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
-const C3 = lindbaldian_decay(1e-3,[1,3,4,5])    
-const Cdagger3 = [adjoint(c) for c in C3]
+const C2 = lindbaldian_decay(1e-3,[1,2,3,4,5])    
+const Cdagger2 = [adjoint(c) for c in C2]
 
 function Ct(t)
-    if t<(T1+T2) || t==(T1+T2)
+    if t<T1 || t==T1
         return C1, Cdagger1
-    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
-        return C3, Cdagger3
+    elseif t<(T1+T2) || t==(T1+T2)
+        return C2, Cdagger2
     end
 end
 
