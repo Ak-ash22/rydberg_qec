@@ -1,8 +1,9 @@
 include("functions.jl")
 
 #Saving the output
-script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data/"
+# script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data/"
 # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
+script_dir = "/scratch/roq68sum/5atoms_code"
 data_folder = joinpath(script_dir, "5_atom_work")
 
 if !isdir(data_folder)
@@ -40,13 +41,13 @@ function main(N_trajectories::Int)
         population_data[:a1] .+= real(expect(n_1, ψt))
         population_data[:a2] .+= real(expect(n_2, ψt))
 
-        print("Trajectory $i/$N_trajectories.\n")
     end
-    
+    print("Trajectory $N_trajectories.\n")
+
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/mcwf_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data end_time
     println("Data saved.")
 end
 
