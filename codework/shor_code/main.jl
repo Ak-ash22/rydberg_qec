@@ -3,7 +3,7 @@ include("functions.jl")
 # Saving the output
 # script_dir = "/scratch/roq68sum/shor_code_data"
 script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data"
-data_folder = joinpath(script_dir, "trial")
+data_folder = joinpath(script_dir, "driving_abc9")
 
 if !isdir(data_folder)
    println("Directory does not exist. Creating directory...: $data_folder")
@@ -30,7 +30,7 @@ function main(N_trajectories::Int)
     
     println("Starting the simulation...")
 
-    for i in 1:100
+    for i in 1:10
         @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f;maxiters=1e9,seed=(N_trajectories*1000 + i))
 
         population_data[:a] .+= real(expect(n_a, ψt))
@@ -49,7 +49,7 @@ function main(N_trajectories::Int)
     
     # Normalize population data
     for key in keys(population_data)
-        population_data[key] .*= 1/100
+        population_data[key] .*= 1/10
     end
 
     end_time = time() - start_time
