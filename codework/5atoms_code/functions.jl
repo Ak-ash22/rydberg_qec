@@ -172,8 +172,9 @@ end
 const C1 = lindbaldian_decay(1e-3,[1,2,3])
 const Cdagger1 = [adjoint(c) for c in C1]
 
-const C2 = lindbaldian_decay(1e-3,[4,5])    
+const C2 = lindbaldian_decay(1e-3,[1,2,3,4,5])    
 const Cdagger2 = [adjoint(c) for c in C2]
+
 
 function Ct(t)
     if t<T1 || t==T1
