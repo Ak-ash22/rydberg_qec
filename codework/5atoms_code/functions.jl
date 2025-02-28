@@ -71,7 +71,7 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         - parameters at time t:: Tuple
     """
 
-    @assert mode in [:T1, :T2, :T3] "Invalid mode selected"
+    @assert mode in [:T1, :T2] "Invalid mode selected"
     if mode == :T1
         Δt = Δ1_0 - p.δ * t
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
@@ -123,22 +123,21 @@ n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
 σx = transition(basis,1,2) + transition(basis,2,1)
 σx = Operator(σx.basis_l, σx.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σx.data))
 
+p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
+const tspan = [0.0:0.1:(T1+T2);]
+
+# System Hamiltonian 1
 σx_a = full_operator(σx, total_qubits, [1])
 σx_c = full_operator(σx, total_qubits, [3])
 const n_a = full_operator(n, total_qubits, [1])
+const n_b = full_operator(n, total_qubits, [2])
 const n_c = full_operator(n, total_qubits, [3])
 nn_ab = full_operator(n, total_qubits, [1,2])
 nn_bc = full_operator(n, total_qubits, [2,3])
-
-
-p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
-const tspan = [0.0:0.1:(T1+T2+T3);]
-
-
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
 const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
 
-
+#System Hamiltonian 2
 σx_1 = full_operator(σx, total_qubits, [4])
 σx_2 = full_operator(σx, total_qubits, [5])
 const n_1 = full_operator(n, total_qubits, [4])
@@ -147,10 +146,10 @@ nn_a1 = full_operator(n, total_qubits, [1,4])
 nn_b1 = full_operator(n, total_qubits, [2,4])
 nn_b2 = full_operator(n, total_qubits, [2,5])
 nn_c2 = full_operator(n, total_qubits, [3,5])
-
 const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
 const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
 
+#Final time dependent Hamiltonian
 function Ht(t)
     if t<T1 || t==T1
         coeffs = coeff1[1](t)
@@ -168,7 +167,6 @@ function Ht(t)
     end
 end
 
-# const tspan = [0.0:0.1:(T1+T2+T3);]
 
 #Helper function for mcwf_dynamic
 const C1 = lindbaldian_decay(1e-3,[1,2,3])

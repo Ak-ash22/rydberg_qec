@@ -1,11 +1,9 @@
-include("dependencies.jl")
-include("system_params.jl")
 include("functions.jl")
 
 #Saving the output
-script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data"
+script_dir = "/home/agfleischhauer/roq68sum/master_work/shor_code_data/"
 # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-data_folder = joinpath(script_dir, "errors")
+data_folder = joinpath(script_dir, "5_atom_work")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
@@ -18,38 +16,37 @@ function main(N_trajectories::Int)
     """
     println("Running the simulation with N_trajectories = $N_trajectories")
 
-    @time begin
-        ψ0 = initialize_system()
-        println("The system has been initialized.")
-        
-        ψ = Vector{Vector}(undef, N_trajectories)
+    start_time = time()
+    ψ0 = initialize_system()
+    println("The system has been initialized.")
+    
+    ψ = Vector{Vector}(undef, N_trajectories)
 
-        full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
-        ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
+    full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
+    ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
 
-        println("Starting the simulation...")
+    # --- Preallocate Arrays ---
+    num_timesteps = length(tspan)
+    population_data = Dict(key => zeros(num_timesteps) for key in (:a, :b,  :c, :a1, :a2))
+    
+    println("Starting the simulation...")
 
-        @sync Threads.@threads for i in 1:N_trajectories
-            local ψt  # Local variable per thread
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=i)
-            ψ[i] = ψt
-            print("Trajectory $i/$N_trajectories.\n")
-        end
+    for i in 1:1
+        @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*1000 + i))
 
-        m = length(tspan)
-        l = N_trajectories
-        ρ_avg = Vector{Matrix}(undef,m)
-        for j in 1:m
-            ρ_sum = zero(ψ[1][j].data * ψ[1][j].data')  # Initialize sum with a zero matrix of the same type
-            for i in 1:l
-                ρ_sum .+= (ψ[i][j].data * ψ[i][j].data')
-            end
-            ρ_avg[j] = ρ_sum / N_trajectories
-        end
+        population_data[:a] .+= real(expect(n_a, ψt))
+        population_data[:b] .+= real(expect(n_b, ψt))
+        population_data[:c] .+= real(expect(n_c, ψt))
+        population_data[:a1] .+= real(expect(n_1, ψt))
+        population_data[:a2] .+= real(expect(n_2, ψt))
+
+        print("Trajectory $i/$N_trajectories.\n")
     end
+    
+    end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/mcwf_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" ρ_avg 
+    @save "$(data_folder)/mcwf_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data end_time
     println("Data saved.")
 end
 

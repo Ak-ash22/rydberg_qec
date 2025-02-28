@@ -84,5 +84,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:T1], p[:T2], p[:T3]
+    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:T1], p[:T2]
 end
