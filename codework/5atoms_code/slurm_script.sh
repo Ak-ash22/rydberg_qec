@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
-#SBATCH -p epyc-256
+#SBATCH -p idle
 #SBATCH --mail-type=FAIL,END
 #SBATCH --array=1-100
 
