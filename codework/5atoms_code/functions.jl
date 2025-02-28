@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, T1, T2 = unpack_params()
+const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, Δ2_0, T1, T2 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, total_qubits, sites)
