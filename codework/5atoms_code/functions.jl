@@ -77,7 +77,7 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
 
     elseif mode == :T2
-        Δt = Δ1_0 - p.δ * t
+        Δt = Δ2_0 - p.δ * t
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6)]
     end
 
