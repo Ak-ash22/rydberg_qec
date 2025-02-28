@@ -69,7 +69,7 @@ function params()
         :δ1 => 0.417,            # adiabtatic sweep rate for qubits
         # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
-        :Δ2_0 => 47.2,        # Detuning at t=0 for ancillas
+        :Δ2_0 => 23,        # Detuning at t=0 for ancillas
         :T1 => 154.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
         :T2 => 154.0,     # Evolution time for step 2
         # :T3 => 154.0     # Evolution time for step 3
