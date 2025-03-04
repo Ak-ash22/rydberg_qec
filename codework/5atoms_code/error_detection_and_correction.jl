@@ -29,7 +29,6 @@ function main(N_trajectories::Int)
     # --- Preallocate Arrays ---
     num_timesteps = length(tspan)
     population_data = Dict(key => zeros(num_timesteps) for key in (:a, :b,  :c, :a1, :a2))
-    fidelity_data = zeros(num_timesteps)
     
     println("Starting the simulation...")
 
@@ -64,20 +63,26 @@ function main(N_trajectories::Int)
 
         println("Error Correction Commencing...")
 
+        #Correcting Atom A
         if ancilla1_population[end] == 1.0
+            fidelity_data = zeros(length(tspan2))
             f1 = f_correct_factory(1)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
 
             fidelity_data .+= real(expect(n_abc, ψt))
         
+        #Correcting Atom C
         elseif ancilla2_population[end] == 1.0
-            f1 = f_correct_factory(2)
+            fidelity_data = zeros(length(tspan2))
+            f1 = f_correct_factory(3)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan3,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
 
             fidelity_data .+= real(expect(n_abc, ψt))
         
+        #Correcting Atom B
         elseif ancilla1_population[end] == 1.0 && ancilla2_population[end] == 1.0
-            f1 = f_correct_factory(3)
+            fidelity_data = zeros(length(tspan3))
+            f1 = f_correct_factory(2)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
            
             fidelity_data .+= real(expect(n_abc, ψt))
