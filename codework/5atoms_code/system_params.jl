@@ -69,13 +69,13 @@ function params()
         :δ1 => 0.417,            # adiabtatic sweep rate for qubits
         # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
-        :Δ2_0 => 23,        # Detuning at t=0 for ancillas
+        :Δ2_0 => 23.0,        # Detuning at t=0 for ancillas
+        :Δac_0 => 1048.0,         # Detuning at t=0 for Correcting Atom A or Atom c
+        :Δb_0 => 2063.0,          # Detuning at t=0 for Correcting Atom B
         :T1 => 154.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
         :T2 => 154.0,     # Evolution time for step 2
-        # :T3 => 154.0     # Evolution time for step 3
-        # :T4 => 582.0     # Evolution time for step 4
-        # :T5 => 582.0     # Evolution time for step 5  -- for phase flip error syndrome
-        # :T6 => 582.0     # Evolution time for step 6  -- for phase flip error syndrome
+        :T3 => 154.0,     # Evolution time for Correcting Atom A or Atom C
+        :T4 => 5000.0     # Evolution time for Correcting Atom B
     )
 end
 
@@ -84,5 +84,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:Δ2_0], p[:T1], p[:T2]
+    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:Δ2_0], p[:Δac_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4]
 end
