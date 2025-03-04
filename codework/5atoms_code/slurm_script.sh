@@ -12,4 +12,4 @@
 
 id=$SLURM_ARRAY_TASK_ID
 
-~/julia-1.11.3/bin/julia error_detection.jl $id
+~/julia-1.11.3/bin/julia error_detection_and_correction.jl $id
