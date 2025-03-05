@@ -16,7 +16,9 @@ function average_populations()
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
+    avg_corrected_population_data = Dict(key => zeros(length(corrected_population_data[:a])) for key in keys(population_data))
     avg_fidelity_data = zeros(length(fidelity_data))
+
 
     println("Processing $num_files files...")
 
@@ -32,6 +34,11 @@ function average_populations()
                 avg_population_data[key] .+= population_data[key]
             end
 
+            #Accumulate error corrected population data
+            for key in keys(corrected_population_data)
+                avg_corrected_population_data[key] .+= corrected_population_data[key]
+            end
+
             # Accumulate fidelity data
             avg_fidelity_data .+= fidelity_data
 
@@ -45,11 +52,15 @@ function average_populations()
         avg_population_data[key] .*= 1 / num_files
     end
 
+    for key in keys(avg_corrected_population_data)
+        avg_corrected_population_data[key] .*= 1 / num_files
+    end
+
     avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
     final_file_path = base_path * "N_atoms=5_γ_decay=0.001_Ntraj=$(num_files)_avg.jld2"
-    @save final_file_path avg_population_data avg_fidelity_data
+    @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")
 end
