@@ -153,7 +153,7 @@ nn_bc = full_operator(n, total_qubits, [2,3])
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
 const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
 
-#System Hamiltonian 2 - driving atoms 1-2-3
+#System Hamiltonian 2 - driving atoms 1-2
 σx_1 = full_operator(σx, total_qubits, [4])
 σx_2 = full_operator(σx, total_qubits, [5])
 const n_1 = full_operator(n, total_qubits, [4])
