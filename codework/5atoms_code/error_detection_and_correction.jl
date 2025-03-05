@@ -3,13 +3,13 @@ include("functions.jl")
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-# script_dir = "/scratch/roq68sum/5atoms_code"
-# data_folder = joinpath(script_dir, "5_atom_correction")
+script_dir = "/scratch/roq68sum/5atoms_code"
+data_folder = joinpath(script_dir, "5_atom_correction")
 
-# if !isdir(data_folder)
-#     println("Directory does not exist. Creating directory...: $data_folder")
-#     mkpath(data_folder)
-# end
+if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -116,7 +116,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
