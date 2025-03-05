@@ -10,7 +10,7 @@ function average_populations()
 
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
-    @load first_file_path population_data fidelity_data # Load dictionary from file
+    @load first_file_path population_data corrected_population_data fidelity_data # Load dictionary from file
 
     num_timesteps = length(population_data[:a])  # Auto-detect array size
 
