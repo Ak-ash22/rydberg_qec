@@ -26,7 +26,7 @@ function main(N_trajectories::Int)
 
     # --- Preallocate Arrays ---
     num_timesteps = length(tspan)
-    population_data = Dict(key => zeros(num_timesteps) for key in (:a, :b,  :c, :a1, :a2))
+    population_data = Dict(key => zeros(num_timesteps) for key in (:a, :b,  :c, :a1, :a2, :abc))
     
     max_length = max(length(tspan2), length(tspan3))  # Choose longest possible time span
     fidelity_data = zeros(max_length)  # Initialize with zeros
@@ -44,6 +44,7 @@ function main(N_trajectories::Int)
         population_data[:a] .+= real(expect(n_a, ψt))
         population_data[:b] .+= real(expect(n_b, ψt))
         population_data[:c] .+= real(expect(n_c, ψt))
+        population_data[:abc] .+= real(expect(n_abc, ψt))
         population_data[:a1] .+= ancilla1_population
         population_data[:a2] .+= ancilla2_population
 
