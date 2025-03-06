@@ -65,6 +65,8 @@ function main(N_trajectories::Int)
 
         else
             println("No Ancilla errors detected.")
+            ancilla1 = 0.0
+            ancilla2 = 0.0
         end
 
         println("Error Correction Commencing...")
