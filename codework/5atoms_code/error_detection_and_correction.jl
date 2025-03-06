@@ -3,13 +3,13 @@ include("functions.jl")
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-# script_dir = "/scratch/roq68sum/5atoms_code"
-# data_folder = joinpath(script_dir, "5_atom_correction")
+script_dir = "/scratch/roq68sum/5atoms_code"
+data_folder = joinpath(script_dir, "5_atom_correction")
 
-# if !isdir(data_folder)
-#     println("Directory does not exist. Creating directory...: $data_folder")
-#     mkpath(data_folder)
-# end
+if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -20,8 +20,6 @@ function main(N_trajectories::Int)
     start_time = time()
     ψ0 = initialize_system()
     println("The system has been initialized.")
-    
-    ψ = Vector{Vector}(undef, N_trajectories)
 
     full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
@@ -54,16 +52,16 @@ function main(N_trajectories::Int)
         rand_float = rand()
         if rand_float ≤ ancilla1_population[end]
             println("Ancilla 1 error detected. Correcting Atom A")
-            ancilla1_population[end] = 1.0
+            ancilla1 = 1.0
 
         elseif rand_float ≤ ancilla2_population[end]
             println("Ancilla 2 error detected. Correcting Atom C")
-            ancilla2_population[end] = 1.0
+            ancilla2 = 1.0
 
         elseif rand_float ≤ ancilla1_population[end] && rand_float ≤ ancilla2_population[end]
             println("Both Ancilla errors detected. Correcting Atom B")
-            ancilla1_population[end] = 1.0
-            ancilla2_population[end] = 1.0
+            ancilla1 = 1.0
+            ancilla2 = 1.0
 
         else
             println("No Ancilla errors detected.")
@@ -74,7 +72,7 @@ function main(N_trajectories::Int)
         ψ1 = ψt[end]
 
         #Correcting Atom A
-        if ancilla1_population[end] == 1.0
+        if ancilla1 == 1.0
 
             f1 = f_correct_factory(1)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
@@ -87,7 +85,7 @@ function main(N_trajectories::Int)
             corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
         
         #Correcting Atom C
-        elseif ancilla2_population[end] == 1.0
+        elseif ancilla2 == 1.0
             
             f1 = f_correct_factory(3)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
@@ -100,7 +98,7 @@ function main(N_trajectories::Int)
             corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
         
         #Correcting Atom B
-        elseif ancilla1_population[end] == 1.0 && ancilla2_population[end] == 1.0
+        elseif ancilla1 == 1.0 && ancilla2 == 1.0
 
             f1 = f_correct_factory(2)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan3,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
@@ -115,7 +113,7 @@ function main(N_trajectories::Int)
         #No Errors Detected
         else
             f1 = f_correct_factory(0)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
 
             fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
             corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
@@ -131,7 +129,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
