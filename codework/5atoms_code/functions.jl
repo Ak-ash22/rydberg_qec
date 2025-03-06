@@ -253,12 +253,16 @@ const H_correct_b = LazySum([coeff4[1](tspan3[1])[i] for i ∈ 1:6],[σx_b, n_b,
 #Hamiltonian for Error Correction of Atom C
 const H_correct_c = LazySum([coeff3[1](tspan2[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
 
+#Hamiltonian for No Correction -- Zero Hamiltonian
+const H_no_correct = LazySum([0.0],[σx_a])
+
 function Ht_correct(t,site)
 """
 Function to calculate the time dependent Hamiltonian for the MCWF method for error correction of atoms A-B-C.
     - H_correct_a: Hamiltonian for error correction of atom A
     - H_correct_b: Hamiltonian for error correction of atom B
     - H_correct_c: Hamiltonian for error correction of atom C
+    - H_no_correct: Zero Hamiltonian -- for no correction
 
 Args:
     t:: Float64: Time
@@ -288,6 +292,9 @@ Returns:
             H_correct_c.factors[i] = coeffs[i]
         end
         return H_correct_c
+
+    elseif site == 0
+        return H_no_correct
     end
 end
 

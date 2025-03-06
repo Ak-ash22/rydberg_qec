@@ -3,13 +3,13 @@ include("functions.jl")
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-script_dir = "/scratch/roq68sum/5atoms_code"
-data_folder = joinpath(script_dir, "5_atom_correction")
+# script_dir = "/scratch/roq68sum/5atoms_code"
+# data_folder = joinpath(script_dir, "5_atom_correction")
 
-if !isdir(data_folder)
-    println("Directory does not exist. Creating directory...: $data_folder")
-    mkpath(data_folder)
-end
+# if !isdir(data_folder)
+#     println("Directory does not exist. Creating directory...: $data_folder")
+#     mkpath(data_folder)
+# end
 
 function main(N_trajectories::Int)
     """
@@ -64,6 +64,9 @@ function main(N_trajectories::Int)
             println("Both Ancilla errors detected. Correcting Atom B")
             ancilla1_population[end] = 1.0
             ancilla2_population[end] = 1.0
+
+        else
+            println("No Ancilla errors detected.")
         end
 
         println("Error Correction Commencing...")
@@ -108,6 +111,18 @@ function main(N_trajectories::Int)
             corrected_population_data[:c][1:length(tout)] .+= real(expect(n_c, ψt))
             corrected_population_data[:a1][1:length(tout)] .+= real(expect(n_1, ψt))
             corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
+        
+        #No Errors Detected
+        else
+            f1 = f_correct_factory(0)
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+
+            fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+            corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
+            corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
+            corrected_population_data[:c][1:length(tout)] .+= real(expect(n_c, ψt))
+            corrected_population_data[:a1][1:length(tout)] .+= real(expect(n_1, ψt))
+            corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
         end
     end
 
@@ -116,7 +131,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
+    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
