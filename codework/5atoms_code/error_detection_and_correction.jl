@@ -54,9 +54,11 @@ function main(N_trajectories::Int)
         if rand_float ≤ ancilla1_population[end]
             println("Ancilla 1 error detected. Correcting Atom A")
             ancilla1 = 1.0
+            ancilla2 = 0.0
 
         elseif rand_float ≤ ancilla2_population[end]
             println("Ancilla 2 error detected. Correcting Atom C")
+            ancilla1 = 0.0
             ancilla2 = 1.0
 
         elseif rand_float ≤ ancilla1_population[end] && rand_float ≤ ancilla2_population[end]
