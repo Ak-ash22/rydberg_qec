@@ -298,20 +298,20 @@ Returns:
     end
 end
 
-function Ct_correct(t)
-"""
-Function to calculate the time dependent Lindbaldian decay operators for the MCWF method for error correction of atoms A-B-C.
+# function Ct_correct(t)
+# """
+# Function to calculate the time dependent Lindbaldian decay operators for the MCWF method for error correction of atoms A-B-C.
 
-Args:
-    t:: Float64: Time
+# Args:
+#     t:: Float64: Time
 
-Returns:
-    C:: Array{Operator}: Array of decay operators acting on the system
-    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-"""
+# Returns:
+#     C:: Array{Operator}: Array of decay operators acting on the system
+#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+# """
 
-    return C, Cdagger
-end
+#     return C, Cdagger
+# end
 
 
 function f_correct(t,ψ,site)

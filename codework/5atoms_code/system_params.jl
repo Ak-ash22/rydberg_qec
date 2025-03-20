@@ -62,20 +62,20 @@ function params()
     "
     return Dict(
         :Ω => 1.0,             # Rabi frequency            
-        :γ_Decay => 1e-3,        # Decay rate on the qubits
+        :γ_Decay => 1e-4,        # Decay rate on the qubits
         :γ_dephase => 0.0,      # Dephasing rate on the qubits
         :V1_nn => -1000.0,      # rydberg interaction on the qubits
         # :V2_nn => -1000.0,      # rydberg interaction on the ancillas
-        :δ1 => 0.417,            # adiabtatic sweep rate for qubits
+        :δ1 => 0.267,            # adiabtatic sweep rate for qubits
         # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
         :Δ2_0 => 23.0,        # Detuning at t=0 for ancillas
         :Δac_0 => 1048.0,         # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2063.0,          # Detuning at t=0 for Correcting Atom B
-        :T1 => 154.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
-        :T2 => 154.0,     # Evolution time for step 2
-        :T3 => 154.0,     # Evolution time for Correcting Atom A or Atom C
-        :T4 => 5000.0     # Evolution time for Correcting Atom B
+        :T1 => 240.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
+        :T2 => 240.0,     # Evolution time for step 2
+        :T3 => 240.0,     # Evolution time for Correcting Atom A or Atom C
+        :T4 => 240.0     # Evolution time for Correcting Atom B
     )
 end
 
