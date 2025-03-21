@@ -3,8 +3,8 @@ using JLD2
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/"
-    file_pattern = "N_atoms=5_γ_decay=0.001_Ntraj="
+    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_4/"
+    file_pattern = "N_atoms=5_γ_decay=0.0001_Ntraj="
 
     num_files = 100  # Number of files to process
 
@@ -59,7 +59,7 @@ function average_populations()
     avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = base_path * "N_atoms=5_γ_decay=0.001_Ntraj=$(num_files)_avg.jld2"
+    final_file_path = base_path * "N_atoms=5_γ_decay=0.0001_Ntraj=$(num_files)_avg.jld2"
     @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")

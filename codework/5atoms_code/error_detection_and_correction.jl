@@ -4,7 +4,7 @@ include("functions.jl")
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
 script_dir = "/scratch/roq68sum/5atoms_code"
-data_folder = joinpath(script_dir, "5_atom_correction")
+data_folder = joinpath(script_dir, "5_atom_correction/decay_1e_4")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
@@ -51,24 +51,19 @@ function main(N_trajectories::Int)
         println("Error Detection Commencing...")
 
         rand_float = rand()
-        if rand_float ≤ ancilla1_population[end]
-            println("Ancilla 1 error detected. Correcting Atom A")
+        if rand_float ≤ ancilla1_population[end] && rand_float ≤ ancilla2_population[end]
+            println("Both Ancilla errors detected. Correcting Atom B")
             ancilla1 = 1.0
-            ancilla2 = 0.0
-
+            ancilla2 = 1.0
+            
         elseif rand_float ≤ ancilla2_population[end]
             println("Ancilla 2 error detected. Correcting Atom C")
             ancilla1 = 0.0
             ancilla2 = 1.0
 
-        elseif rand_float ≤ ancilla1_population[end] && rand_float ≤ ancilla2_population[end]
-            println("Both Ancilla errors detected. Correcting Atom B")
+        elseif rand_float ≤ ancilla1_population[end]
+            println("Ancilla 1 error detected. Correcting Atom A")
             ancilla1 = 1.0
-            ancilla2 = 1.0
-
-        else
-            println("No Ancilla errors detected.")
-            ancilla1 = 0.0
             ancilla2 = 0.0
         end
 
@@ -76,8 +71,21 @@ function main(N_trajectories::Int)
 
         ψ1 = ψt[end]
 
+        #Correcting Atom B
+        if ancilla1 == 1.0 && ancilla2 == 1.0
+
+            f1 = f_correct_factory(2)
+            @time tout, ψt = timeevolution.mcwf_dynamic(tspan3,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+        
+            fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+            corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
+            corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
+            corrected_population_data[:c][1:length(tout)] .+= real(expect(n_c, ψt))
+            corrected_population_data[:a1][1:length(tout)] .+= real(expect(n_1, ψt))
+            corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
+
         #Correcting Atom A
-        if ancilla1 == 1.0
+        elseif ancilla1 == 1.0
 
             f1 = f_correct_factory(1)
             @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
@@ -102,18 +110,6 @@ function main(N_trajectories::Int)
             corrected_population_data[:a1][1:length(tout)] .+= real(expect(n_1, ψt))
             corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
         
-        #Correcting Atom B
-        elseif ancilla1 == 1.0 && ancilla2 == 1.0
-
-            f1 = f_correct_factory(2)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan3,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
-           
-            fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
-            corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
-            corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
-            corrected_population_data[:c][1:length(tout)] .+= real(expect(n_c, ψt))
-            corrected_population_data[:a1][1:length(tout)] .+= real(expect(n_1, ψt))
-            corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
         
         #No Errors Detected
         else
