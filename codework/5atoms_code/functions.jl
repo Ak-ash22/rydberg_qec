@@ -197,7 +197,7 @@ end
 
 
 #Helper function for mcwf_dynamic
-const C = lindbaldian_decay(1e-3,[1,2,3,4,5])    
+const C = lindbaldian_decay(γ_Decay,[1,2,3,4,5])    
 const Cdagger = [adjoint(c) for c in C]
 
 
