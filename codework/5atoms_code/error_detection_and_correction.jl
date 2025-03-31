@@ -32,11 +32,15 @@ function main(N_trajectories::Int)
     fidelity_data = zeros(max_length)  # Initialize with zeros
 
     corrected_population_data = Dict(key => zeros(max_length) for key in (:a, :b,  :c, :a1, :a2))
+    has_error = false
     
     println("Starting the simulation...")
 
     for i in 1:1
-        @time tout, ψt = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*1000 + i))
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*1000 + i),display_jumps=true)
+
+        #Track Jumps Info
+        has_error = length(jumps) > 0
 
         ancilla1_population = real(expect(n_1, ψt))
         ancilla2_population = real(expect(n_2, ψt))
@@ -136,7 +140,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data fidelity_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
