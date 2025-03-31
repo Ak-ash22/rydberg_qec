@@ -72,7 +72,7 @@ function params()
         :Δ2_0 => 23.0,        # Detuning at t=0 for ancillas
         :Δac_0 => 1048.0,         # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2063.0,          # Detuning at t=0 for Correcting Atom B
-        :T1 => 240.0+240.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
+        :T1 => 480.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
         :T2 => 240.0,     # Evolution time for step 2
         :T3 => 240.0,     # Evolution time for Correcting Atom A or Atom C
         :T4 => 240.0     # Evolution time for Correcting Atom B
