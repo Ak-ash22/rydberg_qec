@@ -13,6 +13,7 @@ function average_populations()
     @load first_file_path population_data corrected_population_data fidelity_data # Load dictionary from file
 
     num_timesteps = length(population_data[:a])  # Auto-detect array size
+    print(num_timesteps)
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
