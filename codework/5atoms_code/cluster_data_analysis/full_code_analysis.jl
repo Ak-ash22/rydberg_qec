@@ -6,14 +6,14 @@ function average_populations()
     base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_4/"
     file_pattern = "N_atoms=5_γ_decay=0.0001_Ntraj="
 
-    num_files = 100  # Number of files to process
+    num_files = 1000  # Number of files to process
 
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
     @load first_file_path population_data corrected_population_data fidelity_data # Load dictionary from file
 
     num_timesteps = length(population_data[:a])  # Auto-detect array size
-    print(num_timesteps)
+    # print(num_timesteps)
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
@@ -70,7 +70,7 @@ end
 function save_jump_files()
     base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_4/"
     file_pattern = "N_atoms=5_γ_decay=0.0001_Ntraj="
-    num_files = 100  # Number of files to process
+    num_files = 1000  # Number of files to process
 
     jump_folder = base_path * "jump_files/"
 

@@ -8,7 +8,7 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH -p epyc-256
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=1-100
+#SBATCH --array=1-1000
 
 id=$SLURM_ARRAY_TASK_ID
 

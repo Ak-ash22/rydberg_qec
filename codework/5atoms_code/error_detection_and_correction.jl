@@ -27,8 +27,8 @@ function main(N_trajectories::Int)
     # --- Preallocate Arrays ---
     num_timesteps = length(tspan)
     population_data = Dict(key => zeros(num_timesteps) for key in (:a, :b,  :c, :a1, :a2, :abc))
-    print(num_timesteps)
-    print(length(population_data[:a]))
+    # print(num_timesteps)
+    # print(length(population_data[:a]))
     
     max_length = max(length(tspan2), length(tspan3))  # Choose longest possible time span
     fidelity_data = zeros(max_length)  # Initialize with zeros
@@ -39,7 +39,7 @@ function main(N_trajectories::Int)
     println("Starting the simulation...")
 
     for i in 1:1
-        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*1000),display_jumps=true)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
 
         #Track Jumps Info
         has_error = length(jumps) > 0
