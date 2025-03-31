@@ -1,4 +1,4 @@
-using JLD2
+using JLD2, FileIO
 
 function average_populations()
     # --- Path to data ---
@@ -90,7 +90,7 @@ function save_jump_files()
             end
 
             println("Saved jumps data to $jump_file_path")
-            
+
         catch e
             @warn "Skipping missing or corrupted file: $file_path ($e)"
         end
