@@ -89,7 +89,7 @@ function save_jump_files()
                 @save jump_file_path has_error population_data corrected_population_data fidelity_data end_time
             end
 
-            println("Saved jumps data to $jump_file_path")
+            println("Saved jumps data Trajectories")
 
         catch e
             @warn "Skipping missing or corrupted file: $file_path ($e)"
