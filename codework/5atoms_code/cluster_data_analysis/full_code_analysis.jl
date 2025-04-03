@@ -60,7 +60,7 @@ function average_populations()
     avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = base_path * "N_atoms=5_γ_decay=0.0001_Ntraj=$(num_files)_timeratio_11_avg.jld2"
+    final_file_path = base_path * "N_atoms=5_γ_decay=0.0001_Ntraj=$(num_files)_timeratio_31_avg.jld2"
     @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")
