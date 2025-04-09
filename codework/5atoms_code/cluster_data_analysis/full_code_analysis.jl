@@ -4,7 +4,7 @@ function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
     base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
-    file_pattern = "N_atoms=5_γ_decay=0.00001_Ntraj="
+    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
 
     num_files = 1000  # Number of files to process
 
@@ -69,7 +69,7 @@ end
 
 function save_jump_files()
     base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
-    file_pattern = "N_atoms=5_γ_decay=0.00001_Ntraj="
+    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
     num_files = 1000  # Number of files to process
 
     jump_folder = base_path * "jump_files/"
@@ -82,12 +82,24 @@ function save_jump_files()
     for i in 1:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
         try
-            @load file_path has_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
+            @load file_path has_error has_correction_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
 
-            if has_error
+            if has_error && has_correction_error
                 # Save the jumps data to a new file
-                jump_file_path = jump_folder * "jumps_" * string(i) * ".jld2"
+                jump_file_path = jump_folder * "jumps_corrected" * string(i) * ".jld2"
                 @save jump_file_path has_error population_data corrected_population_data fidelity_data end_time
+            end
+
+            if  has_error && !has_correction_error
+                # Save the jumps data to a new file
+                jump_file_path = jump_folder * "jumps_not_corrected_" * string(i) * ".jld2"
+                @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
+            end
+
+            if !has_error && has_correction_error
+                # Save the jumps data to a new file
+                jump_file_path = jump_folder * "jumps_correction_error_" * string(i) * ".jld2"
+                @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
             end
 
             println("Saved jumps data Trajectories")

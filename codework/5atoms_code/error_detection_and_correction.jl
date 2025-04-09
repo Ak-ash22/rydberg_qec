@@ -35,6 +35,7 @@ function main(N_trajectories::Int)
 
     corrected_population_data = Dict(key => zeros(max_length) for key in (:a, :b,  :c, :a1, :a2))
     has_error = false
+    has_correction_error = false
     
     println("Starting the simulation...")
 
@@ -87,7 +88,8 @@ function main(N_trajectories::Int)
         if ancilla1 == 1.0 && ancilla2 == 1.0
 
             f1 = f_correct_factory(2)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan3,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+            @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i),display_jumps=true)
+            has_correction_error = length(jumps) > 0
         
             fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
             corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
@@ -100,7 +102,8 @@ function main(N_trajectories::Int)
         elseif ancilla1 == 1.0
 
             f1 = f_correct_factory(1)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+            @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i),display_jumps=true)
+            has_correction_error = length(jumps) > 0
 
             fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
             corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
@@ -113,7 +116,8 @@ function main(N_trajectories::Int)
         elseif ancilla2 == 1.0
             
             f1 = f_correct_factory(3)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+            @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i),display_jumps=true)
+            has_correction_error = length(jumps) > 0
 
             fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
             corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
@@ -142,7 +146,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error population_data corrected_population_data fidelity_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error has_correction_error population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
