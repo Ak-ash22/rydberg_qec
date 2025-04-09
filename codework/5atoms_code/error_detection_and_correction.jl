@@ -4,7 +4,7 @@ include("functions.jl")
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
 script_dir = "/scratch/roq68sum/5atoms_code"
-data_folder = joinpath(script_dir, "5_atom_correction/decay_1e_4")
+data_folder = joinpath(script_dir, "5_atom_correction/decay_1e_5")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
