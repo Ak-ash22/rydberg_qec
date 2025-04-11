@@ -130,7 +130,8 @@ function main(N_trajectories::Int)
         #No Errors Detected
         else
             f1 = f_correct_factory(0)
-            @time tout, ψt = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i))
+            @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψ1,f1,maxiters=1e9,seed=(N_trajectories*1000 + i),display_jumps=true)
+            has_correction_error = length(jumps) > 0
 
             fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
             corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
