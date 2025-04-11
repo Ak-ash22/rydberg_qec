@@ -84,19 +84,13 @@ function save_jump_files()
         try
             @load file_path has_error has_correction_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
 
-            if has_error && has_correction_error
+            if has_error
                 # Save the jumps data to a new file
-                jump_file_path = jump_folder * "jumps_corrected" * string(i) * ".jld2"
+                jump_file_path = jump_folder * "jumps_" * string(i) * ".jld2"
                 @save jump_file_path has_error population_data corrected_population_data fidelity_data end_time
             end
 
-            if  has_error && !has_correction_error
-                # Save the jumps data to a new file
-                jump_file_path = jump_folder * "jumps_not_corrected_" * string(i) * ".jld2"
-                @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
-            end
-
-            if !has_error && has_correction_error
+            if has_correction_error
                 # Save the jumps data to a new file
                 jump_file_path = jump_folder * "jumps_correction_error_" * string(i) * ".jld2"
                 @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
