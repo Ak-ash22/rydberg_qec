@@ -35,6 +35,7 @@ function main(N_trajectories::Int)
 
     corrected_population_data = Dict(key => zeros(max_length) for key in (:a, :b,  :c, :a1, :a2))
     has_error = false
+    detected_error = false
     has_correction_error = false
     
     println("Starting the simulation...")
@@ -63,16 +64,19 @@ function main(N_trajectories::Int)
             println("Both Ancilla errors detected. Correcting Atom B")
             ancilla1 = 1.0
             ancilla2 = 1.0
+            detected_error = true
             
         elseif rand_float ≤ round(ancilla2_population[end];digits=3)
             println("Ancilla 2 error detected. Correcting Atom C")
             ancilla1 = 0.0
             ancilla2 = 1.0
+            detected_error = true
 
         elseif rand_float ≤ round(ancilla1_population[end];digits=3)
             println("Ancilla 1 error detected. Correcting Atom A")
             ancilla1 = 1.0
             ancilla2 = 0.0
+            detected_error = true
         
         else 
             println("No errors detected.")
@@ -147,7 +151,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error has_correction_error population_data corrected_population_data fidelity_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 

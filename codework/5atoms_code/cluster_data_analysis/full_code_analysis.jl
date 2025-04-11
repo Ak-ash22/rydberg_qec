@@ -3,8 +3,8 @@ using JLD2, FileIO
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_4/"
-    file_pattern = "N_atoms=5_γ_decay=0.0001_Ntraj="
+    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
+    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
 
     num_files = 1000  # Number of files to process
 
@@ -60,7 +60,7 @@ function average_populations()
     avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = base_path * "N_atoms=5_γ_decay=0.0001_Ntraj=$(num_files)_avg.jld2"
+    final_file_path = base_path * "N_atoms=5_γ_decay=0.00001_Ntraj=$(num_files)_avg.jld2"
     @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")
@@ -68,8 +68,8 @@ end
 
 
 function save_jump_files()
-    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_4/"
-    file_pattern = "N_atoms=5_γ_decay=0.0001_Ntraj="
+    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
+    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
     num_files = 1000  # Number of files to process
 
     jump_folder = base_path * "jump_files/"
@@ -82,7 +82,7 @@ function save_jump_files()
     for i in 1:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
         try
-            @load file_path has_error has_correction_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
+            @load file_path has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
 
             if has_error
                 # Save the jumps data to a new file
@@ -96,12 +96,18 @@ function save_jump_files()
                 @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
             end
 
-            println("Saved jumps data Trajectories")
+            if detected_error
+                # Save the jumps data to a new file
+                jump_file_path = jump_folder * "jumps_detected_error_" * string(i) * ".jld2"
+                @save jump_file_path detected_error population_data corrected_population_data fidelity_data end_time
+            end
 
         catch e
             @warn "Skipping missing or corrupted file: $file_path ($e)"
         end
     end
+    
+    println("Saved jumps data Trajectories")
 end
 
 
