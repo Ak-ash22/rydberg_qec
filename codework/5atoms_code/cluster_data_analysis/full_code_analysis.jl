@@ -102,16 +102,17 @@ function save_jump_files()
                 jump_file_path = jump_folder * "jumps_detection_error_" * string(i) * ".jld2"
                 @save jump_file_path detected_error population_data corrected_population_data fidelity_data end_time
             end
+                
+            println("Saved jumps data Trajectories")
 
         catch e
             @warn "Skipping missing or corrupted file in function 2: $file_path ($e)"
         end
     end
-    
-    println("Saved jumps data Trajectories")
+
 end
 
 
 # --- Run the function ---
-average_populations()
+# average_populations()
 save_jump_files()
