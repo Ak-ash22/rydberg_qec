@@ -53,10 +53,10 @@ function params()
         :γ_dephase => 0.0,      # Dephasing rate
         :V1_nn => -1000.0,      # rydberg interaction
         :V2_nn => -1000.0,
-        :δ => 0.108,             # adiabtatic sweep rate
+        :δ => 0.0,             # adiabtatic sweep rate
         :Δ1_0 => 1032.0,        # initial detuning
         :Δ2_0 => 1032.0,
-        :T_optimal => 582.0     # optimal time
+        :T_optimal => 0.0     # optimal time 
     )
 end
 
