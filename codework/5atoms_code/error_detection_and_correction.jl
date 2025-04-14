@@ -60,19 +60,19 @@ function main(N_trajectories::Int)
 
         rand_float = round(rand();digits=1)
 
-        if rand_float ≤ round(ancilla1_population[end];digits=1) && rand_float ≤ round(ancilla2_population[end];digits=1)
+        if rand_float < round(ancilla1_population[end];digits=1) && rand_float < round(ancilla2_population[end];digits=1)
             println("Both Ancilla errors detected. Correcting Atom B")
             ancilla1 = 1.0
             ancilla2 = 1.0
             detected_error = true
             
-        elseif rand_float ≤ round(ancilla2_population[end];digits=1)
+        elseif rand_float < round(ancilla2_population[end];digits=1)
             println("Ancilla 2 error detected. Correcting Atom C")
             ancilla1 = 0.0
             ancilla2 = 1.0
             detected_error = true
 
-        elseif rand_float ≤ round(ancilla1_population[end];digits=1)
+        elseif rand_float < round(ancilla1_population[end];digits=1)
             println("Ancilla 1 error detected. Correcting Atom A")
             ancilla1 = 1.0
             ancilla2 = 0.0
