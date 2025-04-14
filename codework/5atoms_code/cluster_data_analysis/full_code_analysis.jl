@@ -97,7 +97,7 @@ function save_jump_files()
                 @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
             end
 
-            if !has error && detected_error
+            if !has_error && detected_error
                 # Save the jumps data to a new file
                 jump_file_path = jump_folder * "jumps_detection_error_" * string(i) * ".jld2"
                 @save jump_file_path detected_error population_data corrected_population_data fidelity_data end_time
@@ -114,5 +114,5 @@ end
 
 
 # --- Run the function ---
-# average_populations()
+average_populations()
 save_jump_files()
