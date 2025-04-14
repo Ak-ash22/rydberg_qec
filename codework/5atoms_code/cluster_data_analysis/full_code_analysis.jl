@@ -44,7 +44,7 @@ function average_populations()
             avg_fidelity_data .+= fidelity_data
 
         catch e
-            @warn "Skipping missing or corrupted file: $file_path ($e)"
+            @warn "Skipping missing or corrupted file in function 1: $file_path ($e)"
         end
     end
 
@@ -82,8 +82,9 @@ function save_jump_files()
     for i in 1:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
         try
-            @load file_path has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time # Load the dictionary
-
+            # Load the file
+            @load file_path has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
+            
             if has_error && detected_error
                 # Save the jumps data to a new file
                 jump_file_path = jump_folder * "jumps_corrected_" * string(i) * ".jld2"
@@ -103,7 +104,7 @@ function save_jump_files()
             end
 
         catch e
-            @warn "Skipping missing or corrupted file: $file_path ($e)"
+            @warn "Skipping missing or corrupted file in function 2: $file_path ($e)"
         end
     end
     
