@@ -2,7 +2,8 @@ include("functions.jl")
 
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
-script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework/$(n_atoms)atoms"
+script_dir = "C:/Users/14aka/OneDrive/Documents/master_work/rydberg_qec/codework/$(n_atoms)atoms"
+
 data_folder = joinpath(script_dir, "results_data")
 
 if !isdir(data_folder)
