@@ -13,6 +13,7 @@ SparseArrays          = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"  # Sparse matrix 
 Random                = "9e28174c-4ba2-5203-b857-d8d62c4213ee"  # Random number generation
 Distributed           = "8ba89e20-285c-5b6f-9357-94700520ee1b"  # Distributed computing
 JLD2                  = "033835bb-276d-576a-a0d0-7875934c4c36"  # JLD2 file format
+Latexify              = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"  # Latex format outputs
 
 [compat]
 QuantumOptics         = ">=0.7"
@@ -24,3 +25,4 @@ SparseArrays          = ">=1.0"
 Random                = ">=1.0"
 Distributed           = ">=1.0"
 JLD2                  = ">=0.4"
+Latexify              = ">=0.16"
