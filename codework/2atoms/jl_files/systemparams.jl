@@ -3,11 +3,11 @@ using DifferentialEquations
 using JLD2, FileIO
 
 const n_atoms = 2
-const r = [0;1]
-const g = [1;0]
+const r = [0.0;1.0]
+const g = [1.0;0.0]
 #initial state of the system
-const α = 1
-const β = sqrt(1-α^2)
+const α = 1/sqrt(2)                 # Coefficient of |r> state
+const β = sqrt(1-α^2)               # Coefficient of |g> state
 
 
 function initialize_system()

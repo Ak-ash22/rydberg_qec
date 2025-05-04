@@ -2,7 +2,7 @@ include("functions.jl")
 
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
-script_dir = "C:/Users/14aka/OneDrive/Documents/master_work/rydberg_qec/codework/$(n_atoms)atoms"
+script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/2atoms"
 
 data_folder = joinpath(script_dir, "results_data")
 
@@ -101,7 +101,7 @@ function case2()
         end
     end
  
-    @save "$(data_folder)/dephase_endmax_fidelity.jld2" dephase sweep_rate fidelity_end max_fidelity
+    @save "$(data_folder)/dephase_endmax_superposition_fidelity.jld2" dephase sweep_rate fidelity_end max_fidelity
 end
 
 function main()
