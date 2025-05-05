@@ -1,0 +1,8 @@
+// This is a TODO list for phaseflip correction protocol of rydbergq_qec project
+
+decay_endmax_fidelity:
+  ☐ Implement dynamical phase correction for decay_endmax_fidelity calculation as well
+
+phaseflip_correction:
+  ☐ Workout on where to implement dynamical phase correction
+  ☐ Workout how to implement dynamical phase correction at these places
