@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, Δ2_0, Δac_0, Δb_0, T1, T2, T3, T4 = unpack_params()
+const Ω, γ_Decay, γ_dephase, V_nn, δ1, δ2, Δ1_0, Δ2_0, Δac_0, Δb_0, T1, T2, T3, T4, T5 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, total_qubits, sites)
@@ -332,19 +332,7 @@ end
 
 
 
-
-
-
-
-
-# struct parameters
-#     Ω::Float64  
-#     γ_Decay::Float64     
-#     γ_dephase::Float64
-#     V1_nn::Float64 
-#     V2_nn::Float64
-# end
-
+##################### Functions to compute the dynamical phase
 
 struct PrecomputedOps{T}
     σminus_sys::Vector{Matrix{T}}
@@ -373,20 +361,8 @@ end
 
 const OPS = PrecomputedOps()
 
-# function (p::parameters)(t)
-#     global Δ1_0 = Δ1_0
-#     global δ =  δ
-#     global Δ2_0 = Δ2_0
-
-#     # tf = -2*(Δ1_0+p.V1_nn)/δ1
-#     return (Δ1_0+δ*t, Δ2_0+δ*t, p.Ω, p.Ω, p.γ_Decay, p.γ_dephase, p.V1_nn, p.V2_nn)
-# end
-
 
 p_tuple = (Ω,γ_Decay,γ_dephase,V_nn,δ,Δ1_0,Δ2_0,OPS)
-
-
-
 
 
 function energy_level_spaghetti(time::Array,p)

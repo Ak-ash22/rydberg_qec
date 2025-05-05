@@ -61,21 +61,21 @@ function params()
     Defining the system parameters
     "
     return Dict(
-        :Ω => 1.0,             # Rabi frequency            
+        :Ω => 1.0,              # Rabi frequency            
         :γ_Decay => 0.0,        # Decay rate on the qubits
-        :γ_dephase => 1e-5,      # Dephasing rate on the qubits
-        :V1_nn => -1000.0,      # rydberg interaction on the qubits
-        # :V2_nn => -1000.0,      # rydberg interaction on the ancillas
-        :δ1 => 0.066,            # adiabtatic sweep rate for qubits
-        # :δ2 => 0.108,            # adiabtatic sweep rate for ancillas
+        :γ_dephase => 1e-5,     # Dephasing rate on the qubits
+        :V_nn => -1000.0,      # rydberg interaction on the qubits
+        :δ1 => 0.066,           # adiabatic sweep rate for encoding qubits
+        :δ2 => 0.108,           # adiabatic sweep rate for ancillas and correction
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
-        :Δ2_0 => 23.0,        # Detuning at t=0 for ancillas
-        :Δac_0 => 1048.0,         # Detuning at t=0 for Correcting Atom A or Atom c
-        :Δb_0 => 2063.0,          # Detuning at t=0 for Correcting Atom B
-        :T1 => 356.0,    # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
-        :T2 => 82.0,     # Evolution time for step 2
-        :T3 => 360.0,     # Evolution time for Correcting Atom A or Atom C
-        :T4 => 360.0     # Evolution time for Correcting Atom B
+        :Δ2_0 => 23.0,          # Detuning at t=0 for ancillas
+        :Δac_0 => 1048.0,       # Detuning at t=0 for Correcting Atom A or Atom c
+        :Δb_0 => 2063.0,        # Detuning at t=0 for Correcting Atom B
+        :T1 => 970.0,           # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
+        :T2 => pi/2,            # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
+        :T3 => 360.0,           # Evolution time for step 3 -- Evolving the ancillas 1 and 2
+        :T4 => 360.0,           # Evolution time for step 4 -- Correcting Atoms
+        :T5 => pi/2             # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
     )
 end
 
@@ -84,5 +84,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V1_nn], p[:δ1], p[:Δ1_0], p[:Δ2_0], p[:Δac_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4]
+    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:δ1], p[:δ2], p[:Δ1_0], p[:Δ2_0], p[:Δac_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5]
 end
