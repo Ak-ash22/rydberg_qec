@@ -41,16 +41,17 @@ struct qubit_parameters
     γ_Decay::Float64
     γ_dephase::Float64
     V_nn::Float64
-    δ::Float64
+    δ1::Float64
+    δ2::Float64
 end
 
-struct ancilla_parameters
-    Ω::Float64
-    γ_Decay::Float64
-    γ_dephase::Float64
-    V_nn::Float64
-    δ::Float64
-end
+# struct ancilla_parameters
+#     Ω::Float64
+#     γ_Decay::Float64
+#     γ_dephase::Float64
+#     V_nn::Float64
+#     δ::Float64
+# end
 
 
 function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
@@ -72,46 +73,56 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         - parameters at time t:: Tuple
     """
 
-    @assert mode in [:T1, :T2, :T3, :T4] "Invalid mode selected"
+    @assert mode in [:T1, :T2, :T3, :T4a, :T4b, :T5] "Invalid mode selected"
 
-    #Qubit Encoding Modes
+    #### Qubit Encoding Modes
     if mode == :T1
-        Δt = Δ1_0 - p.δ * t
+        Δt = Δ1_0 - p.δ1 * t
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn, p.V_nn]
 
+    #### Hadamard Mode 1    
     elseif mode == :T2
-        Δt = Δ2_0 - p.δ * t
+        return [p.Ω/2, p.Ω/2, p.Ω/2]
+    
+    #### Ancilla driving mode
+    elseif mode == :T3
+        Δt = Δ2_0 - p.δ2 * t
         return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6)]
     
-    #Error Correction Modes
-    elseif mode == :T3
-        Δt = Δac_0 - p.δ * t
+    #### Correction mode for Atom A or C   
+    elseif mode == :T4a
+        Δt = Δac_0 - p.δ2 * t
         return [p.Ω/2, Δt, p.V_nn, p.V_nn/(2^6)]
 
-    elseif mode == :T4
-        Δt = Δb_0 - p.δ * t
+    #### Correction mode for Atom B
+    elseif mode == :T4b
+        Δt = Δb_0 - p.δ2 * t
         return [p.Ω/2, Δt, p.V_nn, p.V_nn, p.V_nn/(2^6), p.V_nn/(2^6)]
+
+    #### Hadamard Mode 2
+    elseif mode == :T5
+        return [p.Ω/2, p.Ω/2, p.Ω/2]
 
     end
 
 end
 
 #Lindbald Operators
-function lindbaldian_decay(γ_Decay::Float64,site::Array)
+function lindbaldian_dephase(γ_dephase::Float64,site::Array)
     """
-    Function to calculate the Lindbaldian decay operator for the MCWF method.
-    The decay operators are returned according to given respective sites.
+    Function to calculate the Lindbaldian dephase operator for the MCWF method.
+    The dephase operators are returned according to given respective sites.
 
     Args:
-        γ_Decay:: Float64: Decay rate
+        γ_dephase:: Float64: Dephase rate
         site:: Array: Array of sites at which the decay operator acts
 
     Returns:
-        C:: Array{Matrix}: Array of decay operators acting on the system
+        C:: Array{Matrix}: Array of dephase operators acting on the system
     """
     basis = NLevelBasis(2)
-    σ_minus = transition(basis,1,2)
-    σ_minus = Operator(σ_minus.basis_l, σ_minus.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σ_minus.data))
+    σ_z= transition(basis,1,1) - transition(basis,2,2)
+    σ_z = Operator(σ_z.basis_l, σ_z.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σ_z.data))
 
     identity = transition(basis,1,1) + transition(basis,2,2)
     identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
@@ -119,7 +130,7 @@ function lindbaldian_decay(γ_Decay::Float64,site::Array)
     
     for i in 1:total_qubits
         if i in site
-            C[i] = sqrt(γ_Decay) .* full_operator(σ_minus, total_qubits, [i])
+            C[i] = sqrt(γ_dephase) .* full_operator(σ_z, total_qubits, [i])
         else
             C[i] = full_operator(identity, total_qubits, [i])
         end
@@ -136,24 +147,42 @@ n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
 σx = Operator(σx.basis_l, σx.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σx.data))
 
 # Parameters for the Atoms -- coefficients for the Hamiltonian
-p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
+p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ1,δ2)
 
-#Timespan for driving atoms A-B-C and 1-2-3
-const tspan = [0.0:0.1:(T1+T2);]
 
-# System Hamiltonian 1 - driving atoms A-B-C
-const σx_a = full_operator(σx, total_qubits, [1])
-const σx_b = full_operator(σx, total_qubits, [2])
-const σx_c = full_operator(σx, total_qubits, [3])
+
+######################################################################################################## Encoding Atoms - Step 1
+#Timespan for driving atoms A-B-C
+const tspan1 = [0.0:0.1:T1;]
+
+# System Hamiltonian 1 - driving atoms A-C
+σx_a = full_operator(σx, total_qubits, [1])
+σx_b = full_operator(σx, total_qubits, [2])
+σx_c = full_operator(σx, total_qubits, [3])
 const n_a = full_operator(n, total_qubits, [1])
 const n_b = full_operator(n, total_qubits, [2])
 const n_c = full_operator(n, total_qubits, [3])
 const nn_ab = full_operator(n, total_qubits, [1,2])
 const nn_bc = full_operator(n, total_qubits, [2,3])
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
-const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+const H1 = LazySum([coeff1[1](tspan1[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
 
-#System Hamiltonian 2 - driving atoms 1-2
+
+
+######################################################################################################## Applying hadamards - Step 2
+const tspan2 = [0.0:0.1:T2;]  #Time span for driving atoms 1-2
+
+σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
+σy_a = full_operator(σy, total_qubits, [1])
+σy_b = full_operator(σy, total_qubits, [2])
+σy_c = full_operator(σy, total_qubits, [3])
+const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
+const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
+
+
+######################################################################################################## Driving atoms 1-2 - Step 3
+const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
+
 σx_1 = full_operator(σx, total_qubits, [4])
 σx_2 = full_operator(σx, total_qubits, [5])
 const n_1 = full_operator(n, total_qubits, [4])
@@ -162,15 +191,16 @@ nn_a1 = full_operator(n, total_qubits, [1,4])
 nn_b1 = full_operator(n, total_qubits, [2,4])
 nn_b2 = full_operator(n, total_qubits, [2,5])
 nn_c2 = full_operator(n, total_qubits, [3,5])
-const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
-const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
+const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
+const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
 
 
 function Ht(t)
 """
 Function to calculate the time dependent Hamiltonian for the MCWF method till time steps T1+T2.
     -- H1: Hamiltonian for driving atoms A-B-C for time 0:T1
-    -- H2: Hamiltonian for driving atoms 1-2-3 for time T1:T1+T2
+    -- H2: Hamiltonian for applying hadamards on atoms A-B-C for time T1:T2
+    -- H3: Hamiltonian for driving atoms 1-2 for time T2:T3
 
 Args:
     t:: Float64: Time
@@ -192,12 +222,19 @@ Returns:
             H2.factors[i] = coeffs[i]
         end
         return H2
+
+    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
+        coeffs = coeff3[1](t-(T1+T2))
+        for i in eachindex(coeffs)
+            H3.factors[i] = coeffs[i]
+        end
+        return H3
     end
 end
 
 
 #Helper function for mcwf_dynamic
-const C = lindbaldian_decay(γ_Decay,[1,2,3,4,5])    
+const C = lindbaldian_dephase(γ_dephase,[1,2,3,4,5])    
 const Cdagger = [adjoint(c) for c in C]
 
 
@@ -215,6 +252,7 @@ Returns:
 
     return C, Cdagger
 end
+
 
 function f(t,ψ)
 """
@@ -234,24 +272,23 @@ Returns:
 end
 
 
-## Error Correction
-const tspan2 = [0.0:0.1:T3;]  #Time span for error correction of atom A or C
-const tspan3 = [0.0:0.1:T4;]  #Time span for error correction of atom B
+######################################################################################################## Error Correction - Step 4
+const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or B
 
 #Required Matrix Constants
 n_abc = full_operator(n, total_qubits, [1,2,3])
 n_abc = Operator(n_abc.basis_l, n_abc.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n_abc.data))
 
 #Hamiltonian for Error Correction of Atom A
-const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-const H_correct_a = LazySum([coeff3[1](tspan2[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
+const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
+const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
 
 #Hamiltonian for Error Correction of Atom B
-const coeff4 = [t->get_qubit_parameters(p,t,:T4)]
-const H_correct_b = LazySum([coeff4[1](tspan3[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
+const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
+const H_correct_b = LazySum([coeff5[1](tspan3[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
 
 #Hamiltonian for Error Correction of Atom C
-const H_correct_c = LazySum([coeff3[1](tspan2[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
+const H_correct_c = LazySum([coeff4[1](tspan2[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
 const H_no_correct = LazySum([0.0],[σx_a])
@@ -273,21 +310,21 @@ Returns:
 """
 
     if site == 1
-        coeffs = coeff3[1](t)
+        coeffs = coeff4[1](t)
         for i in eachindex(coeffs)
             H_correct_a.factors[i] = coeffs[i]
         end
         return H_correct_a
 
     elseif site == 2
-        coeffs = coeff4[1](t)
+        coeffs = coeff5[1](t)
         for i in eachindex(coeffs)
             H_correct_b.factors[i] = coeffs[i]
         end
         return H_correct_b
 
     elseif site == 3
-        coeffs = coeff3[1](t)
+        coeffs = coeff4[1](t)
         for i in eachindex(coeffs)
             H_correct_c.factors[i] = coeffs[i]
         end
@@ -332,138 +369,186 @@ end
 
 
 
-##################### Functions to compute the dynamical phase
+###############################################################################################Timespan for applying hadamards - Step 5
+const tspan6 = [0.0:0.1:T5;]  #Time span for driving atoms 1-2
 
-struct PrecomputedOps{T}
-    σminus_sys::Vector{Matrix{T}}
-    σplus_sys::Vector{Matrix{T}}
-    σx_sys::Vector{Matrix{T}}
-    σz_sys::Vector{Matrix{T}}
-    n_sys::Vector{Matrix{T}}
-    nn_sys::Vector{Matrix{T}}
-end
-
-function PrecomputedOps(n_atoms::Int=3)
-    σ_x     = [0 1; 1 0]
-    σ_minus = [0 1; 0 0]
-    σ_plus  = [0 0; 1 0]
-    σ_z     = [1 0; 0 -1]
-    n       = [0 0; 0 1]
-    I₂      = Matrix{Float64}(I,2,2)
-
-    make(op) = [reduce(kron, [i==k ? op : I₂ for i=1:n_atoms]) for k=1:n_atoms]
-
-    return PrecomputedOps(
-        make(σ_minus), make(σ_plus), make(σ_x),
-        make(σ_z),     make(n),      [kron(n,n,I₂), kron(I₂,n,n)]
-    )
-end
-
-const OPS = PrecomputedOps()
+σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
+σy_a = full_operator(σy, total_qubits, [1])
+σy_b = full_operator(σy, total_qubits, [2])
+σy_c = full_operator(σy, total_qubits, [3])
+const coeff6 = [t->get_qubit_parameters(p,t,:T5)]
+const H_end = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
 
 
-p_tuple = (Ω,γ_Decay,γ_dephase,V_nn,δ,Δ1_0,Δ2_0,OPS)
+function Ht_end(t)
+"""
+Function to calculate the time dependent Hamiltonian for the MCWF method for applying hadamrd back to atoms A-B-C.
+    - H_end: Hamiltonian for applying hadamards on atoms A-B-C for time T4:T5
 
-
-function energy_level_spaghetti(time::Array,p)
-    """
-    Function to calculate the energy levels of the system at different time steps.
-    Args:
-        time:: Array: Array of time steps
-        p:: Tuple: Parameters of the system
-    Returns:
-        - e:: Array: Array of energy levels
-        - e_vec:: Array: Array of eigenvectors
-        - Delta:: Array: Array of detuning values
-    """
-    # Unpack the solution object
-    t_vals = time  
-    e = []
-    e_vec = []
-    Delta = []
-
-    for t in t_vals
-
-        #parameters
-        Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, Δ2_0, ops = p
-        Δ_t = Δ1_0 + δ*t
-
-        # unpack the pre‑built operators ↓
-        σx_sys, σminus_sys, σplus_sys,
-        σz_sys, n_sys, nn_sys = ops.σx_sys, ops.σminus_sys, ops.σplus_sys,
-                                ops.σz_sys, ops.n_sys, ops.nn_sys
-
-        #Hamiltonian
-        H = Ω/2 .* σx_sys[1] + Ω/2 .* σx_sys[3] + V_nn .* nn_sys[1] + V_nn.* nn_sys[2] +
-            Δ_t .* n_sys[1] + Δ_t .* n_sys[3]
-
-        eigenvals = eigen(H,sortby=nothing).values
-        eigvecs = eigen(H,sortby=nothing).vectors
-        push!(e_vec, eigvecs)
-        push!(e, eigenvals)
-        push!(Delta, Δ_t)
+Args:
+    t:: Float64: Time
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+"""
+    
+    coeffs = coeff6[1](t)
+    for i in eachindex(coeffs)
+        H_end.factors[i] = coeffs[i]
     end
-
-    return e, e_vec, Delta
+    return H_end
 end
 
-
-function trapezoidal_integrate(t,E1,E2)
+function f_end(t,ψ)
     """
-    Function to compute the dynamical phase using the trapezoidal rule for numerical integration.
+    Function to calculate the time evolution of the system using the MCWF method.
+    
     Args:
-        t:: Array: Array of time steps
-        E1:: Array: Array of energy levels for the first state
-        E2:: Array: Array of energy levels for the second state
+        t:: Float64: Time
+    
     Returns:
-        - Δ0_dyn:: Float64: Dynamical phase
-        - ΔEs:: Array: Array of energy differences
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
     """
-        # Trapezoidal rule for numerical integration
-        ΔEs = E2 .- E1
-        Δ0_dyn = -2*π* sum(diff(t) .* (ΔEs[1:end-1] .+ ΔEs[2:end]) / 2)
-        return Δ0_dyn, ΔEs
+    
+    H = Ht_end(t)
+    return H, Ct(t)...
 end
 
+    
 
-function compute_dynamical_phase(t::Array)
-    """
-    Function to compute the dynamical phase of the system.
-    Args:
-        t:: Array: Array of time steps
-        E1:: Array: Array of energy levels for the first state
-        E2:: Array: Array of energy levels for the second state
+# ############################################################################################################### Functions to compute the dynamical phase
 
-    Returns:
-        - Δ0_dyn:: Float64: Dynamical phase
-    """
+# struct PrecomputedOps{T}
+#     σminus_sys::Vector{Matrix{T}}
+#     σplus_sys::Vector{Matrix{T}}
+#     σx_sys::Vector{Matrix{T}}
+#     σz_sys::Vector{Matrix{T}}
+#     n_sys::Vector{Matrix{T}}
+#     nn_sys::Vector{Matrix{T}}
+# end
 
-    # Calculate the energy levels
-    energy_levels, _, _ = energy_level_spaghetti(t,p_tuple)
+# function PrecomputedOps(n_atoms::Int=3)
+#     σ_x     = [0 1; 1 0]
+#     σ_minus = [0 1; 0 0]
+#     σ_plus  = [0 0; 1 0]
+#     σ_z     = [1 0; 0 -1]
+#     n       = [0 0; 0 1]
+#     I₂      = Matrix{Float64}(I,2,2)
 
-    #ggg energy level
-    e_ggg = [subarray[4] for subarray in energy_levels]
+#     make(op) = [reduce(kron, [i==k ? op : I₂ for i=1:n_atoms]) for k=1:n_atoms]
 
-    #rrr energy level
-    e_rrr = [subarray[1] for subarray in energy_levels]
+#     return PrecomputedOps(
+#         make(σ_minus), make(σ_plus), make(σ_x),
+#         make(σ_z),     make(n),      [kron(n,n,I₂), kron(I₂,n,n)]
+#     )
+# end
 
-    Δ0_dyn, _ = trapezoidal_integrate(t,e_ggg,e_rrr)
-    Δ0_dyn = mod(-Δ0_dyn,2π)
+# const OPS = PrecomputedOps()
 
-    return Δ0_dyn
-end
 
-function apply_dynamical_phase(Δ0_dyn::Float64)
-    """
-    Function to apply the dynamical phase correction to the system.
-    Args:
-        - Δ0_dyn:: Float64: Dynamical phase
+# p_tuple = (Ω,γ_Decay,γ_dephase,V_nn,δ,Δ1_0,Δ2_0,OPS)
 
-    Returns:
-        - ψ_target:: Array: Target state after applying the dynamical phase correction
-    """
 
-    ψ_target = α * reduce(kron,[g,g,g,g,g]) + exp(im * Δ0_dyn) * β * reduce(kron,[r,r,r,g,g])
-    ψ_target = ψ_target / norm(ψ_target)
-    return ψ_target
-end
+# function energy_level_spaghetti(time::Array,p)
+#     """
+#     Function to calculate the energy levels of the system at different time steps.
+#     Args:
+#         time:: Array: Array of time steps
+#         p:: Tuple: Parameters of the system
+#     Returns:
+#         - e:: Array: Array of energy levels
+#         - e_vec:: Array: Array of eigenvectors
+#         - Delta:: Array: Array of detuning values
+#     """
+#     # Unpack the solution object
+#     t_vals = time  
+#     e = []
+#     e_vec = []
+#     Delta = []
+
+#     for t in t_vals
+
+#         #parameters
+#         Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, Δ2_0, ops = p
+#         Δ_t = Δ1_0 + δ*t
+
+#         # unpack the pre‑built operators ↓
+#         σx_sys, σminus_sys, σplus_sys,
+#         σz_sys, n_sys, nn_sys = ops.σx_sys, ops.σminus_sys, ops.σplus_sys,
+#                                 ops.σz_sys, ops.n_sys, ops.nn_sys
+
+#         #Hamiltonian
+#         H = Ω/2 .* σx_sys[1] + Ω/2 .* σx_sys[3] + V_nn .* nn_sys[1] + V_nn.* nn_sys[2] +
+#             Δ_t .* n_sys[1] + Δ_t .* n_sys[3]
+
+#         eigenvals = eigen(H,sortby=nothing).values
+#         eigvecs = eigen(H,sortby=nothing).vectors
+#         push!(e_vec, eigvecs)
+#         push!(e, eigenvals)
+#         push!(Delta, Δ_t)
+#     end
+
+#     return e, e_vec, Delta
+# end
+
+
+# function trapezoidal_integrate(t,E1,E2)
+#     """
+#     Function to compute the dynamical phase using the trapezoidal rule for numerical integration.
+#     Args:
+#         t:: Array: Array of time steps
+#         E1:: Array: Array of energy levels for the first state
+#         E2:: Array: Array of energy levels for the second state
+#     Returns:
+#         - Δ0_dyn:: Float64: Dynamical phase
+#         - ΔEs:: Array: Array of energy differences
+#     """
+#         # Trapezoidal rule for numerical integration
+#         ΔEs = E2 .- E1
+#         Δ0_dyn = -2*π* sum(diff(t) .* (ΔEs[1:end-1] .+ ΔEs[2:end]) / 2)
+#         return Δ0_dyn, ΔEs
+# end
+
+
+# function compute_dynamical_phase(t::Array)
+#     """
+#     Function to compute the dynamical phase of the system.
+#     Args:
+#         t:: Array: Array of time steps
+#         E1:: Array: Array of energy levels for the first state
+#         E2:: Array: Array of energy levels for the second state
+
+#     Returns:
+#         - Δ0_dyn:: Float64: Dynamical phase
+#     """
+
+#     # Calculate the energy levels
+#     energy_levels, _, _ = energy_level_spaghetti(t,p_tuple)
+
+#     #ggg energy level
+#     e_ggg = [subarray[4] for subarray in energy_levels]
+
+#     #rrr energy level
+#     e_rrr = [subarray[1] for subarray in energy_levels]
+
+#     Δ0_dyn, _ = trapezoidal_integrate(t,e_ggg,e_rrr)
+#     Δ0_dyn = mod(-Δ0_dyn,2π)
+
+#     return Δ0_dyn
+# end
+
+# function apply_dynamical_phase(Δ0_dyn::Float64)
+#     """
+#     Function to apply the dynamical phase correction to the system.
+#     Args:
+#         - Δ0_dyn:: Float64: Dynamical phase
+
+#     Returns:
+#         - ψ_target:: Array: Target state after applying the dynamical phase correction
+#     """
+
+#     ψ_target = α * reduce(kron,[g,g,g,g,g]) + exp(im * Δ0_dyn) * β * reduce(kron,[r,r,r,g,g])
+#     ψ_target = ψ_target / norm(ψ_target)
+#     return ψ_target
+# end
