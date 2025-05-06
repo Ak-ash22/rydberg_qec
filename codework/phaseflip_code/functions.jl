@@ -225,14 +225,14 @@ Returns:
         return H1
 
     elseif t<(T1+T2_z) || t==(T1+T2_z)
-        coeffs = coeff2[1](t-T1)
+        coeffs = coeff2[1](t)
         for i in eachindex(coeffs)
             H2_z.factors[i] = coeffs[i]
         end
         return H2_z
     
     elseif t<(T1+T2_y+T2_z) || t==(T1+T2_y+T2_z)
-        coeffs = coeff2[1](t-(T1+T2_z))
+        coeffs = coeff2[1](t)  # Update to subtract (T1 + T2_z)
         for i in eachindex(coeffs)
             H2_y.factors[i] = coeffs[i]
         end
