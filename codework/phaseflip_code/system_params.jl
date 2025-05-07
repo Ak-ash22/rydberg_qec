@@ -1,6 +1,6 @@
-const n_qubits = 3
+const num_qubits = 3
 const n_ancillas = 2
-const total_qubits = n_qubits + n_ancillas
+const total_qubits = num_qubits + n_ancillas
 
 const g = [1.0, 0.0]
 const r = [0.0, 1.0]
@@ -51,7 +51,7 @@ function initialize_system()
 
     Returns: The wavefunction of the system at t=0.
     "
-    ψ_system = wavefunction(total_qubits,α,β,2)
+    ψ_system = wavefunction(num_qubits,α,β,2)
 
     return ψ_system
 end
@@ -74,7 +74,7 @@ function params()
         :T1 => 970.0,           # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
         :T2_y => pi/2,          
         :T2_z => pi,            # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
-        :T3 => 360.0,           # Evolution time for step 3 -- Evolving the ancillas 1 and 2
+        :T3 => 82.0,           # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => 360.0,           # Evolution time for step 4 -- Correcting Atoms
         :T5 => pi/2             # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
     )

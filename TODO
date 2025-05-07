@@ -6,3 +6,7 @@ decay_endmax_fidelity:
 phaseflip_correction:
   ☐ Workout on where to implement dynamical phase correction
   ☐ Workout how to implement dynamical phase correction at these places
+
+
+error_detection_and_correction:
+  ☐ During the dynamical phase calculation, no need to calculate the fidelity - for cases with jumps this is useless
