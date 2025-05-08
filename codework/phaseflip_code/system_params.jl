@@ -65,13 +65,13 @@ function params()
         :γ_Decay => 0.0,        # Decay rate on the qubits
         :γ_dephase => 0.0,     # Dephasing rate on the qubits
         :V_nn => -1000.0,      # rydberg interaction on the qubits
-        :δ1 => 0.066,           # adiabatic sweep rate for encoding qubits
+        :δ1 => 0.178,           # adiabatic sweep rate for encoding qubits
         :δ2 => 0.108,           # adiabatic sweep rate for ancillas and correction
         :Δ1_0 => 1032.0,        # Detuning at t=0 for qubits
         :Δ2_0 => 23.0,          # Detuning at t=0 for ancillas
         :Δac_0 => 1048.0,       # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2063.0,        # Detuning at t=0 for Correcting Atom B
-        :T1 => 970.0,           # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
+        :T1 => 360.0,           # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
         :T2_y => pi/2,          
         :T2_z => pi,            # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => 82.0,           # Evolution time for step 3 -- Evolving the ancillas 1 and 2

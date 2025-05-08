@@ -38,15 +38,18 @@ function main(N_trajectories::Int)
     # has_error = false
     # detected_error = false
     # has_correction_error = false
+    Eg = []
+    Er = []
+    D = []
     
     println("Starting the simulation...")
-
+ 
     for i in 1:1
         println("Encoding Commencing...")
         # tspan = [0.0:0.1:(T1+T2);]
-        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)  # pass through to `solve`
         println("Encoding complete.")
-
+ 
         ψ_ideal = α*reduce(kron,[r,r,r])+ β*reduce(kron,[g,g,g])
         ψ_target = ψ_ideal / norm(ψ_ideal);
         evolved_fidelity = abs(ψt[end].data' * ψ_target)^2
@@ -55,8 +58,13 @@ function main(N_trajectories::Int)
 
 
         ## Dynamical Phase Correction
-        Δ_dyn = compute_dynamical_phase(tspan1)
-        ψt_end_corrected = apply_dynamical_phase(Δ_dyn/2, ψt[end])
+        print(length(tout))
+        Δ_dyn,e_ggg,e_rrr, delta = compute_dynamical_phase(tout)
+        # Δ_dyn = 0.7414468002153711
+        append!(Eg, e_ggg)
+        append!(Er, e_rrr)
+        append!(D, delta)
+        ψt_end_corrected = apply_dynamical_phase(Δ_dyn, ψt[end])
         ψt_end_dyn = ψt_end_corrected.data
 
         encoding_fidelity = abs(ψt_end_dyn' * ψ_target)^2
@@ -245,7 +253,7 @@ function main(N_trajectories::Int)
 
     println("Simulation complete. Saving data...")
     # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
-     @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data 
+     @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" population_data Eg Er D
     println("Data saved.")
 end
 

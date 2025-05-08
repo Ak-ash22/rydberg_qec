@@ -576,7 +576,7 @@ function compute_dynamical_phase(t::Array)
     """
 
     # Calculate the energy levels
-    energy_levels, _, _ = energy_level_spaghetti(t,p_tuple)
+    energy_levels, _, delta = energy_level_spaghetti(t,p_tuple)
 
     #ggg energy level
     e_ggg = [subarray[4] for subarray in energy_levels]
@@ -585,9 +585,9 @@ function compute_dynamical_phase(t::Array)
     e_rrr = [subarray[1] for subarray in energy_levels]
 
     Δ0_dyn, _ = trapezoidal_integrate(t,e_ggg,e_rrr)
-    Δ0_dyn = mod(Δ0_dyn,2π)
+    Δ0_dyn = mod(-Δ0_dyn,2π)
 
-    return Δ0_dyn
+    return Δ0_dyn,e_ggg,e_rrr, delta
 end
 
 function apply_dynamical_phase(Δ0_dyn::Float64, ψ_obtained::Ket)
@@ -600,11 +600,12 @@ function apply_dynamical_phase(Δ0_dyn::Float64, ψ_obtained::Ket)
         - ψ_target:: Array: Target state after applying the dynamical phase correction
     """
 
-    # Rz_minus = Operator(NLevelBasis(2), [exp(-im * Δ0_dyn/2) 0; 0 exp(im * Δ0_dyn/2)])
+    # Rz_minus = Operator(NLevelBasis(2), [exp(-im * Δ0_dyn) 0; 0 exp(im * Δ0_dyn)])
     # Rz_correction = full_operator(Rz_minus, num_qubits, [1,3])
 
-    # ψ_obtained.data[end] = exp(im * Δ0_dyn) * ψ_obtained.data[end]
-    # ψ_corrected = ψ_obtained/norm(ψ_obtained)
+    ψ_obtained /= norm(ψ_obtained)
+    ψ_obtained.data[end] = exp(im * Δ0_dyn) * ψ_obtained.data[end]
+    ψ_corrected = ψ_obtained/norm(ψ_obtained)
 
     ggg = reduce(kron, [g, g, g])
     rrr = reduce(kron, [r, r, r])
@@ -614,9 +615,10 @@ function apply_dynamical_phase(Δ0_dyn::Float64, ψ_obtained::Ket)
     ϕ_actual = angle(amp_rrr) - angle(amp_ggg)
     ϕ_actual = mod(ϕ_actual, 2π)
 
-    ψ_obtained.data[end] = exp(im * ϕ_actual) * ψ_obtained.data[end]
-    ψ_corrected = ψ_obtained/norm(ψ_obtained)
+    # ψ_obtained.data[end] = exp(im * ϕ_actual) * ψ_obtained.data[end]
+    # ψ_corrected = ψ_obtained/norm(ψ_obtained)
     # ψ_corrected = Rz_correction * (ψ_obtained/norm(ψ_obtained))
-
+    println("Actual dynamical phase: ", ϕ_actual)
+    println("Calculated dynamical phase: ", Δ0_dyn)
     return ψ_corrected
 end
