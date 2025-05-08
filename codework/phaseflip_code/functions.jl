@@ -602,23 +602,23 @@ function apply_dynamical_phase(Δ0_dyn::Float64, ψ_obtained::Ket)
 
     # Rz_minus = Operator(NLevelBasis(2), [exp(-im * Δ0_dyn) 0; 0 exp(im * Δ0_dyn)])
     # Rz_correction = full_operator(Rz_minus, num_qubits, [1,3])
+    # ψ_corrected = Rz_correction * (ψ_obtained/norm(ψ_obtained))
 
-    ψ_obtained /= norm(ψ_obtained)
-    ψ_obtained.data[end] = exp(im * Δ0_dyn) * ψ_obtained.data[end]
-    ψ_corrected = ψ_obtained/norm(ψ_obtained)
+    # ψ_obtained /= norm(ψ_obtained)
+    # ψ_obtained.data[end] = exp(im * Δ0_dyn) * ψ_obtained.data[end]
+    # ψ_corrected = ψ_obtained/norm(ψ_obtained)
 
     ggg = reduce(kron, [g, g, g])
     rrr = reduce(kron, [r, r, r])
-
     amp_ggg = ψ_obtained.data' * ggg
     amp_rrr = ψ_obtained.data' * rrr
     ϕ_actual = angle(amp_rrr) - angle(amp_ggg)
     ϕ_actual = mod(ϕ_actual, 2π)
 
-    # ψ_obtained.data[end] = exp(im * ϕ_actual) * ψ_obtained.data[end]
-    # ψ_corrected = ψ_obtained/norm(ψ_obtained)
-    # ψ_corrected = Rz_correction * (ψ_obtained/norm(ψ_obtained))
+    ψ_obtained.data[end] = exp(im * ϕ_actual) * ψ_obtained.data[end]
+    ψ_corrected = ψ_obtained/norm(ψ_obtained)
+    
     println("Actual dynamical phase: ", ϕ_actual)
-    println("Calculated dynamical phase: ", Δ0_dyn)
+    # println("Calculated dynamical phase: ", Δ0_dyn)
     return ψ_corrected
 end

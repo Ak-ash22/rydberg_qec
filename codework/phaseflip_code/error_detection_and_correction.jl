@@ -58,25 +58,18 @@ function main(N_trajectories::Int)
 
 
         ## Dynamical Phase Correction
-        print(length(tout))
         Δ_dyn,e_ggg,e_rrr, delta = compute_dynamical_phase(tout)
-        # Δ_dyn = 0.7414468002153711
-        append!(Eg, e_ggg)
-        append!(Er, e_rrr)
-        append!(D, delta)
+        # append!(Eg, e_ggg)
+        # append!(Er, e_rrr)
+        # append!(D, delta)
         ψt_end_corrected = apply_dynamical_phase(Δ_dyn, ψt[end])
         ψt_end_dyn = ψt_end_corrected.data
 
         encoding_fidelity = abs(ψt_end_dyn' * ψ_target)^2
         println("Adiabatic sweep successfull with encoding fidelity $(encoding_fidelity)\n")
-        # println(ψt_end_dyn[end])
 
         #Track Jumps Info
         # has_error = length(jumps) > 0
-
-        # ancilla1_population = real(expect(n_1, ψt))
-        # ancilla2_population = real(expect(n_2, ψt))
-
 
         append!(population_data[:a], real.(expect(n_a, ψt)))
         append!(population_data[:b], real.(expect(n_b, ψt)))
