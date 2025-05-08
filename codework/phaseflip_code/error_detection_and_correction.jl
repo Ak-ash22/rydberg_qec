@@ -30,7 +30,7 @@ function main(N_trajectories::Int)
     ψ_target = ψ_ideal / norm(ψ_ideal);
     # # --- Preallocate Arrays ---
     # encoding_timesteps = length(tspan1) + length(tspan2) + length(tspan3)
-    population_data = Dict(key => [] for key in (:a, :b,  :c, :a1, :a2, :abc))
+    population_data = Dict(key => [] for key in (:a, :b,  :c, :a1, :a2))
 
     # # print(num_timesteps)
     # # print(length(population_data[:a]))

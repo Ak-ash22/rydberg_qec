@@ -10,15 +10,17 @@ function average_populations()
 
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
-    @load first_file_path population_data corrected_population_data fidelity_data # Load dictionary from file
+    @load first_file_path population_data corrected_population_data #fidelity_data # Load dictionary from file
 
     num_timesteps = length(population_data[:a])  # Auto-detect array size
     # print(num_timesteps)
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
-    avg_corrected_population_data = Dict(key => zeros(length(corrected_population_data[:a])) for key in keys(population_data))
-    # avg_fidelity_data = zeros(length(fidelity_data))
+    avg_corrected_population_data = Dict(key => zeros(length(corrected_population_data[:a])) for key in keys(corrected_population_data))
+
+    print(length(population_data[:a]))
+    print(length(avg_population_data[:a]))    # avg_fidelity_data = zeros(length(fidelity_data))
 
 
     println("Processing $num_files files...")
@@ -28,17 +30,17 @@ function average_populations()
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
         try
-            @load file_path population_data corrected_population_data fidelity_data # Load the dictionary
+            @load file_path population_data corrected_population_data #fidelity_data # Load the dictionary
 
             # Accumulate population data for all keys dynamically
             for key in keys(population_data)
                 avg_population_data[key] .+= population_data[key]
             end
 
-            #Accumulate error corrected population data
-            for key in keys(corrected_population_data)
-                avg_corrected_population_data[key] .+= corrected_population_data[key]
-            end
+            # #Accumulate error corrected population data
+            # for key in keys(corrected_population_data)
+            #     avg_corrected_population_data[key] .+= corrected_population_data[key]
+            # end
 
             # Accumulate fidelity data
             # avg_fidelity_data .+= fidelity_data
@@ -53,9 +55,9 @@ function average_populations()
         avg_population_data[key] .*= 1 / num_files
     end
 
-    for key in keys(avg_corrected_population_data)
-        avg_corrected_population_data[key] .*= 1 / num_files
-    end
+    # for key in keys(avg_corrected_population_data)
+    #     avg_corrected_population_data[key] .*= 1 / num_files
+    # end
 
     # avg_fidelity_data .*= 1 / num_files
 
