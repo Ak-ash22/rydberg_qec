@@ -3,8 +3,8 @@ using JLD2, FileIO
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
-    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
+    file_pattern = "N_atoms=5_γ_dephase=0.0001_Ntraj="
 
     num_files = 1000  # Number of files to process
 
@@ -18,7 +18,7 @@ function average_populations()
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
     avg_corrected_population_data = Dict(key => zeros(length(corrected_population_data[:a])) for key in keys(population_data))
-    avg_fidelity_data = zeros(length(fidelity_data))
+    # avg_fidelity_data = zeros(length(fidelity_data))
 
 
     println("Processing $num_files files...")
@@ -41,7 +41,7 @@ function average_populations()
             end
 
             # Accumulate fidelity data
-            avg_fidelity_data .+= fidelity_data
+            # avg_fidelity_data .+= fidelity_data
 
         catch e
             @warn "Skipping missing or corrupted file in function 1: $file_path ($e)"
@@ -57,11 +57,11 @@ function average_populations()
         avg_corrected_population_data[key] .*= 1 / num_files
     end
 
-    avg_fidelity_data .*= 1 / num_files
+    # avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = base_path * "N_atoms=5_γ_decay=0.00001_Ntraj=$(num_files)_avg.jld2"
-    @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
+    final_file_path = base_path * "N_atoms=5_γ_dephase=1e-4_Ntraj=$(num_files)_avg.jld2"
+    @save final_file_path avg_population_data avg_corrected_population_data # avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")
 end
@@ -115,4 +115,4 @@ end
 
 # --- Run the function ---
 average_populations()
-save_jump_files()
+# save_jump_files()
