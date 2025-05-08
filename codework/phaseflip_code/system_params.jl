@@ -72,8 +72,8 @@ function params()
         :Δac_0 => 1048.0,       # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2063.0,        # Detuning at t=0 for Correcting Atom B
         :T1 => 592.0,           # Evolution time for step 1 -- From 2atom_optimal_decay_result.ipynb
-        :T2_y => pi/2,          
-        :T2_z => pi,            # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
+        :T_y => pi/2,          
+        :T_z => pi,            # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => 82.0,           # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => 360.0,           # Evolution time for step 4 -- Correcting Atoms
         :T5 => pi/2             # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
@@ -85,5 +85,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:δ1], p[:δ2], p[:Δ1_0], p[:Δ2_0], p[:Δac_0], p[:Δb_0], p[:T1], p[:T2_y], p[:T2_z], p[:T3], p[:T4], p[:T5]
+    return p[:Ω], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:δ1], p[:δ2], p[:Δ1_0], p[:Δ2_0], p[:Δac_0], p[:Δb_0], p[:T1], p[:T_y], p[:T_z], p[:T3], p[:T4], p[:T5]
 end

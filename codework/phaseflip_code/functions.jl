@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω, γ_Decay, γ_dephase, V_nn, δ1, δ2, Δ1_0, Δ2_0, Δac_0, Δb_0, T1, T2_y, T2_z, T3, T4, T5 = unpack_params()
+const Ω, γ_Decay, γ_dephase, V_nn, δ1, δ2, Δ1_0, Δ2_0, Δac_0, Δb_0, T1, T_y, T_z, T3, T4, T5 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, qubits, sites)
@@ -156,16 +156,16 @@ p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ1,δ2)
 const tspan1 = [0.0:0.1:T1;]
 
 # System Hamiltonian 1 - driving atoms A-C
-σx_a = full_operator(σx, num_qubits, [1])
-σx_b = full_operator(σx, num_qubits, [2])
-σx_c = full_operator(σx, num_qubits, [3])
-const n_a = full_operator(n, num_qubits, [1])
-const n_b = full_operator(n, num_qubits, [2])
-const n_c = full_operator(n, num_qubits, [3])
-const nn_ab = full_operator(n, num_qubits, [1,2])
-const nn_bc = full_operator(n, num_qubits, [2,3])
+σx_small_a = full_operator(σx, num_qubits, [1])
+σx_small_b = full_operator(σx, num_qubits, [2])
+σx_small_c = full_operator(σx, num_qubits, [3])
+const n_small_a = full_operator(n, num_qubits, [1])
+const n_small_b = full_operator(n, num_qubits, [2])
+const n_small_c = full_operator(n, num_qubits, [3])
+const nn_small_ab = full_operator(n, num_qubits, [1,2])
+const nn_small_bc = full_operator(n, num_qubits, [2,3])
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
-const H1 = LazySum([coeff1[1](tspan1[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+const H1 = LazySum([coeff1[1](tspan1[1])[i] for i ∈ 1:6],[σx_small_a, σx_small_c, n_small_a, n_small_c, nn_small_ab, nn_small_bc])
 
 function Ht1(t)
     """
@@ -191,21 +191,21 @@ end
 
 
 ######################################################################################################## Applying hadamards - Step 2
-tspan2_y = [0.0:0.1:T2_y;]  #Time span for applying hadamards on atoms A-B-C
-tspan2_z = [0.0:0.1:T2_z;]  #Time span for applying hadamards on atoms A-B-C
-const tspan2 = [0.0: 0.1:(T2_y+T2_z);]  #Time span for applying hadamards on atoms A-B-C
+# tspan2_y = [0.0:0.1:T_y;]  #Time span for applying hadamards on atoms A-B-C
+# tspan2_z = [0.0:0.1:T_z;]  #Time span for applying hadamards on atoms A-B-C
+const tspan2 = [0.0: 0.1:(T_y+T_z);]  #Time span for applying hadamards on atoms A-B-C
 σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
-σy_a = full_operator(σy, num_qubits, [1])
-σy_b = full_operator(σy, num_qubits, [2])
-σy_c = full_operator(σy, num_qubits, [3])
+σy_small_a = full_operator(σy, num_qubits, [1])
+σy_small_b = full_operator(σy, num_qubits, [2])
+σy_small_c = full_operator(σy, num_qubits, [3])
 
 σz = transition(basis,1,1) - transition(basis,2,2)
-σz_a = full_operator(σz, num_qubits, [1])
-σz_b = full_operator(σz, num_qubits, [2])
-σz_c = full_operator(σz, num_qubits, [3])
+σz_small_a = full_operator(σz, num_qubits, [1])
+σz_small_b = full_operator(σz, num_qubits, [2])
+σz_small_c = full_operator(σz, num_qubits, [3])
 const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
-const H2_y = LazySum([coeff2[1](tspan2_y[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
-const H2_z = LazySum([coeff2[1](tspan2_z[1])[i] for i ∈ 1:3],[σz_a, σz_b, σz_c])
+const H2_y = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:3],[σy_small_a, σy_small_b, σy_small_c])
+const H2_z = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:3],[σz_small_a, σz_small_b, σz_small_c])
 
 function Ht2(t)
     """
@@ -217,14 +217,14 @@ function Ht2(t)
         H:: LazySum: Time dependent Hamiltonian
     """
 
-    if t<(T2_z) || t==(T2_z)
+    if t<(T_z) || t==(T_z)
         coeffs = coeff2[1](t)
         for i in eachindex(coeffs)
             H2_z.factors[i] = coeffs[i]
         end
         return H2_z
 
-    elseif t<(T2_y+T2_z) || t==(T2_y+T2_z)
+    elseif t<(T_y+T_z) || t==(T_y+T_z)
         coeffs = coeff2[1](t)
         for i in eachindex(coeffs)
             H2_y.factors[i] = coeffs[i]
@@ -277,6 +277,9 @@ const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
 
 σx_1 = full_operator(σx, total_qubits, [4])
 σx_2 = full_operator(σx, total_qubits, [5])
+const n_a = full_operator(n, total_qubits, [1])
+const n_b = full_operator(n, total_qubits, [2])
+const n_c = full_operator(n, total_qubits, [3])
 const n_1 = full_operator(n, total_qubits, [4])
 const n_2 = full_operator(n, total_qubits, [5])
 nn_a1 = full_operator(n, total_qubits, [1,4])
@@ -325,25 +328,31 @@ end
 
 
 ######################################################################################################## Error Correction - Step 4
-# const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or B
+const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or B
 
 #Required Matrix Constants
-n_abc = full_operator(n, num_qubits, [1,2,3])
-n_abc = Operator(n_abc.basis_l, n_abc.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n_abc.data))
+nn_ab = full_operator(n, total_qubits, [1,2])
+nn_bc = full_operator(n, total_qubits, [2,3])
+nn_ab = full_operator(n, total_qubits, [1,2])
+σx_a = full_operator(σx, total_qubits, [1])
+σx_b = full_operator(σx, total_qubits, [2])
+σx_c = full_operator(σx, total_qubits, [3])
 
-# #Hamiltonian for Error Correction of Atom A
-# const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
-# const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
 
-# #Hamiltonian for Error Correction of Atom B
-# const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
-# const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
 
-# #Hamiltonian for Error Correction of Atom C
-# const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
+#Hamiltonian for Error Correction of Atom A
+const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
+const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
 
-# #Hamiltonian for No Correction -- Zero Hamiltonian
-# const H_no_correct = LazySum([0.0],[σx_a])
+#Hamiltonian for Error Correction of Atom B
+const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
+const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
+
+#Hamiltonian for Error Correction of Atom C
+const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
+
+#Hamiltonian for No Correction -- Zero Hamiltonian
+const H_no_correct = LazySum([0.0],[σx_a])
 
 function Ht_correct(t,site)
 """
@@ -403,7 +412,7 @@ Returns:
 """
 
     H = Ht_correct(t,site)
-    return H, Ct(t)...
+    return H, C, Cdagger
 end
 
 function f_correct_factory(site)
@@ -422,14 +431,19 @@ end
 
 
 ###############################################################################################Timespan for applying hadamards - Step 5
-# const tspan6 = [0.0:0.1:T5;]  #Time span for driving atoms 1-2
+const tspan6 = [0.0:0.1:(T_z+T_y);]  #Time span for driving atoms 1-2
 
 # σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
-# σy_a = full_operator(σy, total_qubits, [1])
-# σy_b = full_operator(σy, total_qubits, [2])
-# σy_c = full_operator(σy, total_qubits, [3])
-# const coeff6 = [t->get_qubit_parameters(p,t,:T5)]
-# const H_end = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
+σy_a = full_operator(σy, total_qubits, [1])
+σy_b = full_operator(σy, total_qubits, [2])
+σy_c = full_operator(σy, total_qubits, [3])
+σz_a = full_operator(σz, total_qubits, [1])
+σz_b = full_operator(σz, total_qubits, [2])
+σz_c = full_operator(σz, total_qubits, [3])
+
+const coeff6 = [t->get_qubit_parameters(p,t,:T5)]
+const H_end_y = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
+const H_end_z = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σz_a, σz_b, σz_c])
 
 
 function Ht_end(t)
@@ -443,11 +457,20 @@ Returns:
     H:: LazySum: Time dependent Hamiltonian
 """
     
-    coeffs = coeff6[1](t)
-    for i in eachindex(coeffs)
-        H_end.factors[i] = coeffs[i]
-    end
-    return H_end
+    if t<(T_z) || t==(T_z)
+        coeffs = coeff6[1](t)
+        for i in eachindex(coeffs)
+            H_end_z.factors[i] = coeffs[i]
+        end
+        return H_end_z
+
+    elseif t<(T_y+T_z) || t==(T_y+T_z)
+        coeffs = coeff6[1](t)
+        for i in eachindex(coeffs)
+            H_end_y.factors[i] = coeffs[i]
+        end
+        return H_end_y
+    end 
 end
 
 function f_end(t,ψ)
@@ -464,7 +487,7 @@ function f_end(t,ψ)
     """
     
     H = Ht_end(t)
-    return H, Ct(t)...
+    return H, C, Cdagger
 end
 
     
