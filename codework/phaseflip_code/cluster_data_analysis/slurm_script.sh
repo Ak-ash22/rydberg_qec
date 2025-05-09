@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J q001b
+#SBATCH -J cluster_data_analysis
 #SBATCH -o logs_auto_runner/%x_%a_log.out
 #SBATCH -e logs_auto_runner/%x_%a_log.err
 #SBATCH --cpus-per-task=1
