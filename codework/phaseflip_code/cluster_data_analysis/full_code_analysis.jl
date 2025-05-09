@@ -3,18 +3,20 @@ using JLD2, FileIO
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_0.0001/"
     file_pattern = "N_atoms=5_γ_dephase=0.0001_Ntraj="
 
     num_files = 1000  # Number of files to process
 
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
-    @load first_file_path population_data corrected_population_data #fidelity_data # Load dictionary from file
+    # @load first_file_path population_data corrected_population_data #fidelity_data # Load dictionary from file
+    @load first_file_path population_data σx_exp  corrected_σx_exp
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => copy(population_data[key]) for key in (:a1,:a2))
-    avg_corrected_population_data = Dict(key => copy(corrected_population_data[key]) for key in (:a,:b,:c,:a1,:a2))
+    avg_σx_exp = Dict(key => copy(σx_exp[key]) for key in (:a,:b,:c))
+    avg_corrected_σx_exp = Dict(key => copy(corrected_σx_exp[key]) for key in (:a,:b,:c))
 
 
     println("Processing $num_files files...")
@@ -32,9 +34,13 @@ function average_populations()
         end
 
         #Accumulate error corrected population data
-        for key in keys(avg_corrected_population_data)
-    	    avg_corrected_population_data[key] .+= corrected_population_data[key]
+        for key in keys(avg_σx_exp)
+    	    avg_σx_exp[key] .+= σx_exp[key]
     	end
+
+        for key in keys(avg_corrected_σx_exp)
+            avg_corrected_σx_exp[key] .+= corrected_σx_exp[key]
+        end
 
             # Accumulate fidelity data
             # avg_fidelity_data .+= fidelity_data
@@ -45,15 +51,22 @@ function average_populations()
         avg_population_data[key] .*= 1 / num_files
     end
 
-    for key in keys(avg_corrected_population_data)
-        avg_corrected_population_data[key] .*= 1 / num_files
+    # for key in keys(avg_corrected_population_data)
+    #     avg_corrected_population_data[key] .*= 1 / num_files
+    # end
+
+    for key in keys(avg_σx_exp)
+        avg_σx_exp[key] .*= 1 / num_files
     end
 
+    for key in keys(avg_corrected_σx_exp)
+        avg_corrected_σx_exp[key] .*= 1 / num_files
+    end
     # avg_fidelity_data .*= 1 / num_files
 
     # --- Save Averaged Data ---
     final_file_path = base_path * "N_atoms=5_γ_dephase=1e-4_Ntraj=$(num_files)_avg.jld2"
-    @save final_file_path avg_population_data avg_corrected_population_data # avg_fidelity_data
+    @save final_file_path avg_population_data avg_σx_exp avg_corrected_σx_exp # avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")
 end
