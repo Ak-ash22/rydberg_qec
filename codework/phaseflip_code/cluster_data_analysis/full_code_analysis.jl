@@ -29,13 +29,13 @@ function average_populations()
     for i in 1:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
-        try
-            @load file_path population_data corrected_population_data #fidelity_data # Load the dictionary
+        
+        @load file_path population_data corrected_population_data #fidelity_data # Load the dictionary
 
-            # Accumulate population data for all keys dynamically
-            for key in keys(population_data)
-                avg_population_data[key] .+= population_data[key]
-            end
+        # Accumulate population data for all keys dynamically
+        for key in keys(population_data)
+            avg_population_data[key] .+= population_data[key]
+        end
 
             # #Accumulate error corrected population data
             # for key in keys(corrected_population_data)
@@ -45,9 +45,9 @@ function average_populations()
             # Accumulate fidelity data
             # avg_fidelity_data .+= fidelity_data
 
-        catch e
-            @warn "Skipping missing or corrupted file in function 1: $file_path ($e)"
-        end
+        # catch e
+        #     @warn "Skipping missing or corrupted file in function 1: $file_path ($e)"
+        # end
     end
 
     # --- Compute Averages ---
