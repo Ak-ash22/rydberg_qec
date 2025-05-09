@@ -21,8 +21,10 @@ function average_populations()
 
     print(length(population_data[:a]))
     print(length(avg_population_data[:a]))    # avg_fidelity_data = zeros(length(fidelity_data))
-    print(type(population_data[:a]))
-    print(type(avg_population_data[:a]))
+    print(typeof(population_data[:a]))
+    print(typeof(avg_population_data[:a]))
+    print(size(population_data[:a]))
+    print(size(avg_population_data[:a]))
 
 
     println("Processing $num_files files...")
