@@ -26,7 +26,7 @@ function average_populations()
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
         
-        @load file_path population_data corrected_population_data #fidelity_data # Load the dictionary
+        @load file_path population_data σx_exp  corrected_σx_exp   #fidelity_data # Load the dictionary
 
         # Accumulate population data for all keys dynamically
 	    for key in keys(avg_population_data)
