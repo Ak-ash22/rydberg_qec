@@ -38,7 +38,7 @@ function average_populations()
 
         # Accumulate population data for all keys dynamically
         for key in keys(population_data)
-            avg_population_data[key] .+= population_data[key]
+            avg_population_data[key] .+= real.(population_data[key])
         end
 
             # #Accumulate error corrected population data
