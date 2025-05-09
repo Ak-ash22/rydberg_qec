@@ -147,10 +147,9 @@ function main(N_trajectories::Int)
         # has_correction_error = length(jumps) > 0
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
-        corrected_σx_exp[:a] .+= real(expect(σx_a, ψt))
-        corrected_σx_exp[:b] .+= real(expect(σx_b, ψt))
-        corrected_σx_exp[:c] .+= real(expect(σx_c, ψt))
-
+        append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
+        append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
+        append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
 
         # corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
         # corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
@@ -165,9 +164,9 @@ function main(N_trajectories::Int)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fa,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
         # has_correction_error = length(jumps) > 0
 
-        corrected_σx_exp[:a] .+= real(expect(σx_a, ψt))
-        corrected_σx_exp[:b] .+= real(expect(σx_b, ψt))
-        corrected_σx_exp[:c] .+= real(expect(σx_c, ψt))
+        append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
+        append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
+        append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         # corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
@@ -183,9 +182,9 @@ function main(N_trajectories::Int)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fc,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
         # has_correction_error = length(jumps) > 0
 
-        corrected_σx_exp[:a] .+= real(expect(σx_a, ψt))
-        corrected_σx_exp[:b] .+= real(expect(σx_b, ψt))
-        corrected_σx_exp[:c] .+= real(expect(σx_c, ψt))
+        append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
+        append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
+        append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         # corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
         # corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
@@ -201,9 +200,9 @@ function main(N_trajectories::Int)
         # has_correction_error = length(jumps) > 0
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
-        corrected_σx_exp[:a] .+= real(expect(σx_a, ψt))
-        corrected_σx_exp[:b] .+= real(expect(σx_b, ψt))
-        corrected_σx_exp[:c] .+= real(expect(σx_c, ψt))
+        append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
+        append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
+        append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
         # corrected_population_data[:a][1:length(tout)] .+= real(expect(n_a, ψt))
         # corrected_population_data[:b][1:length(tout)] .+= real(expect(n_b, ψt))
         # corrected_population_data[:c][1:length(tout)] .+= real(expect(n_c, ψt))
@@ -214,9 +213,9 @@ function main(N_trajectories::Int)
     println("Applying hadamards back...")
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan6,ψt[end],f_end,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
 
-    corrected_σx_exp[:a] .+= real(expect(σx_a, ψt))
-    corrected_σx_exp[:b] .+= real(expect(σx_b, ψt))
-    corrected_σx_exp[:c] .+= real(expect(σx_c, ψt))
+    append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
+    append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
+    append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
     println("Hadamards applied.")
 
 
