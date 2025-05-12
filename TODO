@@ -8,5 +8,4 @@ phaseflip_correction:
   ✔ Workout how to implement dynamical phase correction at these places @done(25-05-08 10:29)
 
 
-error_detection_and_correction:
-  ☐ During the dynamical phase calculation, no need to calculate the fidelity - for cases with jumps this is useless
+
