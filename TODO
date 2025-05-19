@@ -4,8 +4,6 @@ decay_endmax_fidelity:
   ☐ Implement dynamical phase correction for decay_endmax_fidelity calculation as well
 
 phaseflip_correction:
-  ✔ Workout on where to implement dynamical phase correction @done(25-05-08 10:29)
-  ✔ Workout how to implement dynamical phase correction at these places @done(25-05-08 10:29)
-
-
+  ☐ Change the lindbaldian jumo operator to 3 level jump operator
+  ☐ Find a way to implement Hadamard for 3 level systems
 
