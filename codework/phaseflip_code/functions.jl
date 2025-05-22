@@ -100,15 +100,33 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         end
         return [Ω1/2, Ω1/2, Ω1/2, Ω2/2, Ω2/2, Ω2/2, Ω2/2, p.Δ_0, p.Δ_0, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
     
-    # #### Correction mode for Atom A or C   
-    # elseif mode == :T4a
-    #     Δt = Δac_0 - p.δ2 * t
-    #     return [p.Ω/2, Δt, p.V_nn, p.V_nn/(2^6)]
+    #### Correction mode for Atom A or C   
+    elseif mode == :T4a
+        if t <= π
+            Ω1 = 1.0
+            Ω2 = 0.0
+        elseif t < (π+sqrt(2)π)
+            Ω1 = 0.0
+            Ω2 = 1.0
+        else 
+            Ω1 = 1.0
+            Ω2 = 0.0
+        end
+        return [Ω1/2, Ω2/2, Ω2/2, p.Δ_0, p.V_nn]
 
-    # #### Correction mode for Atom B
-    # elseif mode == :T4b
-    #     Δt = Δb_0 - p.δ2 * t
-    #     return [p.Ω/2, Δt, p.V_nn, p.V_nn, p.V_nn/(2^6), p.V_nn/(2^6)]
+    #### Correction mode for Atom B
+    elseif mode == :T4b
+        if t <= π
+            Ω1 = 1.0
+            Ω2 = 0.0
+        elseif t < (π+sqrt(2)π)
+            Ω1 = 0.0
+            Ω2 = 1.0
+        else 
+            Ω1 = 1.0
+            Ω2 = 0.0
+        end
+        return [Ω1/2, Ω1/2, Ω2/2, Ω2/2, 2*p.Δ_0, p.V_nn, p.V_nn]
 
     # #### Hadamard Mode 2
     # elseif mode == :T5
@@ -178,6 +196,7 @@ const n_r_atom1 = full_operator(n_r, total_qubits, [1])
 nn_r12 = full_operator(n_r, total_qubits, [1,2])
 
 #Driving Atom B
+σx_0r_atom2 = full_operator(σx_0r, total_qubits, [2])
 σx_1r_atom2 = full_operator(σx_1r, total_qubits, [2])
 const n_r_atom2 = full_operator(n_r, total_qubits, [2])
 
@@ -299,8 +318,8 @@ end
 const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
 
 ### Driving operators for the ancillas
-σx_0r_ancilla1 = full_operator(σx_1r, total_qubits, [4])
-σx_1r_ancilla1 = full_operator(σx_0r, total_qubits, [4])
+σx_0r_ancilla1 = full_operator(σx_0r, total_qubits, [4])
+σx_1r_ancilla1 = full_operator(σx_1r, total_qubits, [4])
 σx_0r_ancilla2 = full_operator(σx_0r, total_qubits, [5])
 σx_1r_ancilla2 = full_operator(σx_1r, total_qubits, [5])
 
@@ -358,105 +377,96 @@ end
 
 
 # ######################################################################################################## Error Correction - Step 4
-# const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or B
-
-# #Required Matrix Constants
-# nn_ab = full_operator(n, total_qubits, [1,2])
-# nn_bc = full_operator(n, total_qubits, [2,3])
-# nn_ab = full_operator(n, total_qubits, [1,2])
-# σx_a = full_operator(σx, total_qubits, [1])
-# σx_b = full_operator(σx, total_qubits, [2])
-# σx_c = full_operator(σx, total_qubits, [3])
+const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or B
 
 
+#Hamiltonian for Error Correction of Atom A
+const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
+const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:5],[σx_1r_ancilla1, σx_0r_atom1, σx_1r_atom1, n_r_atom1, nn_r14])
 
-# #Hamiltonian for Error Correction of Atom A
-# const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
-# const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
+#Hamiltonian for Error Correction of Atom B
+const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
+const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:7],[σx_1r_ancilla1, σx_1r_ancilla2, σx_0r_atom2, σx_1r_atom2, n_r_atom2, nn_r24, nn_r25])
 
-# #Hamiltonian for Error Correction of Atom B
-# const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
-# const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
+#Hamiltonian for Error Correction of Atom C
+const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:5],[σx_1r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
 
-# #Hamiltonian for Error Correction of Atom C
-# const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
+#Hamiltonian for No Correction -- Zero Hamiltonian
+const H_no_correct = LazySum([0.0],[σx_0r_atom1])
 
-# #Hamiltonian for No Correction -- Zero Hamiltonian
-# const H_no_correct = LazySum([0.0],[σx_a])
+function Ht_correct(t,site)
+"""
+Function to calculate the time dependent Hamiltonian for the MCWF method for error correction of atoms A-B-C.
+    - H_correct_a: Hamiltonian for error correction of atom A
+    - H_correct_b: Hamiltonian for error correction of atom B
+    - H_correct_c: Hamiltonian for error correction of atom C
+    - H_no_correct: Zero Hamiltonian -- for no correction
 
-# function Ht_correct(t,site)
-# """
-# Function to calculate the time dependent Hamiltonian for the MCWF method for error correction of atoms A-B-C.
-#     - H_correct_a: Hamiltonian for error correction of atom A
-#     - H_correct_b: Hamiltonian for error correction of atom B
-#     - H_correct_c: Hamiltonian for error correction of atom C
-#     - H_no_correct: Zero Hamiltonian -- for no correction
+Args:
+    t:: Float64: Time
+    site:: Int: Site of the atom to be corrected
 
-# Args:
-#     t:: Float64: Time
-#     site:: Int: Site of the atom to be corrected
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+"""
 
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-# """
+    if site == 1
+        coeffs = coeff4[1](t)
+        for i in eachindex(coeffs)
+            H_correct_a.factors[i] = coeffs[i]
+        end
+        return H_correct_a
 
-#     if site == 1
-#         coeffs = coeff4[1](t)
-#         for i in eachindex(coeffs)
-#             H_correct_a.factors[i] = coeffs[i]
-#         end
-#         return H_correct_a
+    elseif site == 2
+        coeffs = coeff5[1](t)
+        for i in eachindex(coeffs)
+            H_correct_b.factors[i] = coeffs[i]
+        end
+        return H_correct_b
 
-#     elseif site == 2
-#         coeffs = coeff5[1](t)
-#         for i in eachindex(coeffs)
-#             H_correct_b.factors[i] = coeffs[i]
-#         end
-#         return H_correct_b
+    elseif site == 3
+        coeffs = coeff4[1](t)
+        for i in eachindex(coeffs)
+            H_correct_c.factors[i] = coeffs[i]
+        end
+        return H_correct_c
 
-#     elseif site == 3
-#         coeffs = coeff4[1](t)
-#         for i in eachindex(coeffs)
-#             H_correct_c.factors[i] = coeffs[i]
-#         end
-#         return H_correct_c
+    elseif site == 0
+        return H_no_correct
+    end
+end
 
-#     elseif site == 0
-#         return H_no_correct
-#     end
-# end
-
-# function f_correct(t,ψ,site)
-# """
-# Function to calculate the time evolution of the system using the MCWF method for error correction.
+function f_correct(t,ψ,site)
+"""
+Function to calculate the time evolution of the system using the MCWF method for error correction.
     
-# Args:
-#     t:: Float64: Time
-#     ψ:: Array: State vector of the system
-#     site:: Int: Site of the atom to be corrected
+Args:
+    t:: Float64: Time
+    ψ:: Array: State vector of the system
+    site:: Int: Site of the atom to be corrected
 
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-#     C:: Array{Operator}: Array of decay operators acting on the system
-#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-# """
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+    C:: Array{Operator}: Array of decay operators acting on the system
+    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+"""
 
-#     H = Ht_correct(t,site)
-#     return H, C, Cdagger
-# end
+    H = Ht_correct(t,site)
+    return H, C, Cdagger
+end
 
-# function f_correct_factory(site)
-#     """
-#     Function to create a closure for the f_correct function with a fixed site.
+function f_correct_factory(site)
+    """
+    Function to create a closure for the f_correct function with a fixed site.
     
-#     Args:
-#     - site: Int (site of the atom to be corrected)
+    Args:
+    - site: Int (site of the atom to be corrected)
     
-#     Returns:
-#     - f_correct_site: Function (f_correct with the site argument fixed)
-#     """
-#     return (t,ψ) -> f_correct(t, ψ, site)
-# end
+    Returns:
+    - f_correct_site: Function (f_correct with the site argument fixed)
+    """
+    return (t,ψ) -> f_correct(t, ψ, site)
+end
 
 
 
