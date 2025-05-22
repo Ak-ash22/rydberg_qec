@@ -86,10 +86,19 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
     # elseif mode == :T2
     #     return [p.Ω/2, p.Ω/2, p.Ω/2]
     
-    # #### Ancilla driving mode
-    # elseif mode == :T3
-    #     Δt = Δ2_0 - p.δ2 * t
-    #     return [p.Ω/2, p.Ω/2, Δt, Δt, p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6), p.V_nn/(2^6)]
+    #### Ancilla driving mode
+    elseif mode == :T3
+        if t <= π
+            Ω1 = 1.0
+            Ω2 = 0.0
+        elseif t < (π+sqrt(2)π)
+            Ω1 = 0.0
+            Ω2 = 1.0
+        else 
+            Ω1 = 1.0
+            Ω2 = 0.0
+        end
+        return [Ω1/2, Ω1/2, Ω1/2, Ω2/2, Ω2/2, Ω2/2, Ω2/2, p.Δ_0, p.Δ_0, p.V_nn, p.V_nn, p.V_nn, p.V_nn]
     
     # #### Correction mode for Atom A or C   
     # elseif mode == :T4a
@@ -287,57 +296,64 @@ end
 # end
 
 # ######################################################################################################## Driving atoms 1-2 - Step 3
-# const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
+const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
 
-# σx_1 = full_operator(σx, total_qubits, [4])
-# σx_2 = full_operator(σx, total_qubits, [5])
-# const n_a = full_operator(n, total_qubits, [1])
-# const n_b = full_operator(n, total_qubits, [2])
-# const n_c = full_operator(n, total_qubits, [3])
-# const n_1 = full_operator(n, total_qubits, [4])
-# const n_2 = full_operator(n, total_qubits, [5])
-# nn_a1 = full_operator(n, total_qubits, [1,4])
-# nn_b1 = full_operator(n, total_qubits, [2,4])
-# nn_b2 = full_operator(n, total_qubits, [2,5])
-# nn_c2 = full_operator(n, total_qubits, [3,5])
-# const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-# const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
+### Driving operators for the ancillas
+σx_0r_ancilla1 = full_operator(σx_1r, total_qubits, [4])
+σx_1r_ancilla1 = full_operator(σx_0r, total_qubits, [4])
+σx_0r_ancilla2 = full_operator(σx_0r, total_qubits, [5])
+σx_1r_ancilla2 = full_operator(σx_1r, total_qubits, [5])
 
-# const C = lindbaldian_dephase(γ_Decay,total_qubits,[i for i in 1:total_qubits])
-# const Cdagger = [adjoint(c) for c in C]
+### Detuning operators for the ancillas
+n_r_ancilla1 = full_operator(n_r, total_qubits, [4])
+n_r_ancilla2 = full_operator(n_r, total_qubits, [5])
 
-# function Ht3(t)
-# """
-# Function to calculate the time dependent Hamiltonian for the MCWF method for driving atoms 1-2.
-#     - H3: Hamiltonian for driving atoms 1-2 for time T2:T3
-# Args:
-#     t:: Float64: Time
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-# """
+### Rydberg Interaction operators
+nn_r14 = full_operator(n_r, total_qubits, [1,4])
+nn_r24 = full_operator(n_r, total_qubits, [2,4])
+nn_r25 = full_operator(n_r, total_qubits, [2,5])
+nn_r35 = full_operator(n_r, total_qubits, [3,5])
 
-#     coeffs = coeff3[1](t)
-#     for i in eachindex(coeffs)
-#         H3.factors[i] = coeffs[i]
-#     end
-#     return H3
 
-# end
+const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
+const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:13],[σx_1r_atom1, σx_1r_atom2, σx_1r_atom3, σx_0r_ancilla1, σx_1r_ancilla1, σx_0r_ancilla2,
+                    σx_1r_ancilla2, n_r_ancilla1, n_r_ancilla2, nn_r14, nn_r24, nn_r25, nn_r35])
 
-# function f3(t,ψ)
-# """
-# Function to calculate the time evolution of the system using the MCWF method for driving atoms 1-2.
-# Args:
-#     t:: Float64: Time
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-#     C:: Array{Operator}: Array of decay operators acting on the system
-#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-# """
+const C = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])
+const Cdagger = [adjoint(c) for c in C]
 
-#     H = Ht3(t)
-#     return H, C, Cdagger
-# end
+function Ht3(t)
+"""
+Function to calculate the time dependent Hamiltonian for the MCWF method for driving atoms 1-2.
+    - H3: Hamiltonian for driving atoms 1-2 for time T2:T3
+Args:
+    t:: Float64: Time
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+"""
+
+    coeffs = coeff3[1](t)
+    for i in eachindex(coeffs)
+        H3.factors[i] = coeffs[i]
+    end
+    return H3
+
+end
+
+function f3(t,ψ)
+"""
+Function to calculate the time evolution of the system using the MCWF method for driving atoms 1-2.
+Args:
+    t:: Float64: Time
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+    C:: Array{Operator}: Array of decay operators acting on the system
+    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+"""
+
+    H = Ht3(t)
+    return H, C, Cdagger
+end
 
 
 
@@ -668,7 +684,11 @@ n1 = transition(NLevelBasis(3),2,2)
 const n0_atom1 = full_operator(n0,total_qubits,[1])
 const n0_atom2 = full_operator(n0,total_qubits,[2])
 const n0_atom3 = full_operator(n0,total_qubits,[3])
+const n0_ancilla1 = full_operator(n0,total_qubits,[4])
+const n0_ancilla2 = full_operator(n0,total_qubits,[5])
 
 const n1_atom1 = full_operator(n1,total_qubits,[1])
 const n1_atom2 = full_operator(n1,total_qubits,[2])
 const n1_atom3 = full_operator(n1,total_qubits,[3])
+const n1_ancilla1 = full_operator(n1,total_qubits,[4])
+const n1_ancilla2 = full_operator(n1,total_qubits,[5])

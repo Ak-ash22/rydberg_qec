@@ -30,7 +30,7 @@ function main(N_trajectories::Int)
     ψ_target = ψ_ideal / norm(ψ_ideal);
 
     # # --- Preallocate Arrays ---
-    population_data = Dict(key => zeros(length(tspan1)) for key in (:a, :b, :c))
+    population_data = Dict(key => zeros(length(tspan1)+length(tspan3)) for key in (:a, :b, :c, :a1, :a2))
     # σx_exp = Dict(key => [] for key in (:a,:b,:c))
 
 
@@ -45,10 +45,10 @@ function main(N_trajectories::Int)
 
     println("Encoding Commencing...")
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)  # pass through to `solve`
-    println("Encoding complete.")
+    # println("Encoding complete.\n")
 
     evolved_fidelity = abs(ψt[end].data' * ψ_target)^2
-    println("Fidelity of the target state with the final state is $(evolved_fidelity)\n")
+    println("Encoding successfull with fidelity $(evolved_fidelity)\n")
 
     # ######################################################## Dynamical Phase Correction
     # Δ_dyn,_,_ = compute_dynamical_phase(tout)
@@ -77,18 +77,19 @@ function main(N_trajectories::Int)
 
     # println("Hadamards applied.\n")
 
-    # println("Driving Ancillas ...")
-    # ψ3_0 = kron(ψt_end_dyn, g,g)
-    # full_basis = CompositeBasis([NLevelBasis(2) for _ in 1:total_qubits]...)
-    # ψ3_ket = Ket(full_basis, ComplexF32.(ψ3_0)) 
+    println("Driving Ancillas ...")
+    ψ3_0 = ψt[end]
 
-    # @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ3_ket,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ3_0,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    
+    ancilla1_population = real(expect(n1_ancilla1, ψt))
+    ancilla2_population = real(expect(n1_ancilla2,ψt))
 
-    # append!(σx_exp[:a], real(expect(σx_a, ψt)))
-    # append!(σx_exp[:b], real(expect(σx_b, ψt)))
-    # append!(σx_exp[:c], real(expect(σx_c, ψt)))
-    # ancilla1_population = real(expect(n_1, ψt))
-    # ancilla2_population = real(expect(n_2, ψt))
+    population_data[:a][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom1,ψt))
+    population_data[:b][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom2,ψt))
+    population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom3,ψt))
+    population_data[:a1][length(tspan1)+1:length(tspan1)+length(tout)] = ancilla1_population
+    population_data[:a2][length(tspan1)+1:length(tspan1)+length(tout)] = ancilla2_population
 
     # append!(population_data[:a1], ancilla1_population)
     # append!(population_data[:a2], ancilla2_population)

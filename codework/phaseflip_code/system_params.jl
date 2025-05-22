@@ -6,7 +6,7 @@ const a = ComplexF64[1,0,0]
 const b = ComplexF64[0,1,0]
 const r = ComplexF64[0,0,1]
 
-const α = sqrt(0.5)           # Coefficient of |1> {|b>} state
+const α = 1         # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
 
 
