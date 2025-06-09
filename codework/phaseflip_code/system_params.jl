@@ -6,7 +6,7 @@ const a = ComplexF64[1,0,0]
 const b = ComplexF64[0,1,0]
 const r = ComplexF64[0,0,1]
 
-const α = 1         # Coefficient of |1> {|b>} state
+const α = sqrt(0.5)         # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
 
 
@@ -74,8 +74,8 @@ function params()
         # :Δac_0 => 1048.0,                 # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2000.0,                    # Detuning at t=0 for Correcting Atom B
         :T1 => (π + sqrt(2)π + 3π),              # Evolution time for step 1 -- Encoding Protocol
-        :T_y => pi/2,          
-        :T_z => pi,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
+        # :T_y => pi/2,          
+        :T2 => 100*pi/4,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (1 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
         :T5 => pi/2                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
@@ -87,5 +87,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T_y], p[:T_z], p[:T3], p[:T4], p[:T5]
+    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5]
 end

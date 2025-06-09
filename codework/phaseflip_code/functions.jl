@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T_y, T_z, T3, T4, T5 = unpack_params()
+const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T2, T3, T4, T5 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, qubits, sites)
@@ -82,9 +82,13 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
 
         return [Ω1/2, Ω2/2, Ω2/2, p.Δ_0, p.V_nn, Ω2/2, Ω2/2, p.Δ_0, p.V_nn]
 
-    # #### Hadamard Mode 1    
-    # elseif mode == :T2
-    #     return [p.Ω/2, p.Ω/2, p.Ω/2]
+    #### Hadamard Mode 1    
+    elseif mode == :T2
+
+        Ω = 1.0
+        Δ = 100
+        return [Ω/2, Ω/2, Ω/2, Ω/2, Ω/2, Ω/2, Δ, Δ, Δ]
+        
     
     #### Ancilla driving mode
     elseif mode == :T3
@@ -233,48 +237,32 @@ end
 
 
 ######################################################################################################## Applying hadamards - Step 2
-# tspan2_y = [0.0:0.1:T_y;]  #Time span for applying hadamards on atoms A-B-C
-# tspan2_z = [0.0:0.1:T_z;]  #Time span for applying hadamards on atoms A-B-C
-# const tspan2 = [0.0: 0.1:(T_y+T_z);]  #Time span for applying hadamards on atoms A-B-C
-# σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
-# σy_small_a = full_operator(σy, num_qubits, [1])
-# σy_small_b = full_operator(σy, num_qubits, [2])
-# σy_small_c = full_operator(σy, num_qubits, [3])
 
-# σz = transition(basis,1,1) - transition(basis,2,2)
-# σz_small_a = full_operator(σz, num_qubits, [1])
-# σz_small_b = full_operator(σz, num_qubits, [2])
-# σz_small_c = full_operator(σz, num_qubits, [3])
-# const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
-# const H2_y = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:3],[σy_small_a, σy_small_b, σy_small_c])
-# const H2_z = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:3],[σz_small_a, σz_small_b, σz_small_c])
+virtual_z_single_gate = exp(-1im * π/4) * transition(basis, 1, 1) + exp(1im * π/4) * transition(basis, 2, 2) + transition(basis, 3, 3)
+virtual_z_single_gate = Operator(virtual_z_single_gate.basis_l, virtual_z_single_gate.basis_r, SparseMatrixCSC{ComplexF32, Int64}(virtual_z_single_gate.data))
+const virtual_z_full = full_operator(virtual_z_single_gate, total_qubits, [1,2,3])
 
-# function Ht2(t)
-#     """
-#     Function to calculate the time dependent Hamiltonian for the MCWF method from time steps T1 to T2.
-#         -- H2: Hamiltonian for applying hadamards on atoms A-B-C for time T1:T2
-#     Args:
-#         t:: Float64: Time
-#     Returns:
-#         H:: LazySum: Time dependent Hamiltonian
-#     """
+const tspan2 = [0.0: 0.1: T2;]
+const coeff2 = [t->get_qubit_parameters(p,t,:T2)]    
+const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:9], [σx_0r_atom1, σx_1r_atom1, σx_0r_atom2, σx_1r_atom2, σx_0r_atom3, σx_1r_atom3, n_r_atom1, n_r_atom2, n_r_atom3])
 
-#     if t<(T_z) || t==(T_z)
-#         coeffs = coeff2[1](t)
-#         for i in eachindex(coeffs)
-#             H2_z.factors[i] = coeffs[i]
-#         end
-#         return H2_z
+function Ht2(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method from time steps T1 to T2.
+        -- H2: Hamiltonian for applying hadamards on atoms A-B-C for time T1:T2
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
 
-#     elseif t<(T_y+T_z) || t==(T_y+T_z)
-#         coeffs = coeff2[1](t)
-#         for i in eachindex(coeffs)
-#             H2_y.factors[i] = coeffs[i]
-#         end
-#         return H2_y
-#     end 
+    coeffs = coeff2[1](t)
+    for i in eachindex(coeffs)
+        H2.factors[i] = coeffs[i]
+    end
+    return H2
 
-# end
+end
 
 
 const C_encoding = lindbaldian_dephase(0.0,total_qubits,[i for i in 1:total_qubits])    
@@ -298,21 +286,21 @@ Returns:
     return H, C_encoding, Cdagger_encoding
 end
 
-# function f2(t,ψ)
-# """
-# Function to calculate the time evolution of the system using the MCWF method.
-# Args:
-#     t:: Float64: Time
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-#     C:: Array{Operator}: Array of decay operators acting on the system
-#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-# """
+function f2(t,ψ)
+"""
+Function to calculate the time evolution of the system using the MCWF method.
+Args:
+    t:: Float64: Time
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+    C:: Array{Operator}: Array of decay operators acting on the system
+    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+"""
 
-#     H = Ht2(t)
+    H = Ht2(t)
 
-#     return H, C_encoding, Cdagger_encoding 
-# end
+    return H, C_encoding, Cdagger_encoding 
+end
 
 # ######################################################################################################## Driving atoms 1-2 - Step 3
 const tspan3 = [0.0:0.1:T3;]  #Time span for driving atoms 1-2
