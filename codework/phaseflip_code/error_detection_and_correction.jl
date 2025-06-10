@@ -75,7 +75,10 @@ function main(N_trajectories::Int)
     # population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom3,ψt))
 
     ψt_end = virtual_z_full * ψt[end]
-    ψ_target2 = reduce(kron,[a,a,a,a,a])
+    plus = sqrt(0.5).*a + sqrt(0.5).*b
+    minus = sqrt(0.5).*a - sqrt(0.5).*b
+    # ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
+    ψ_target2 = reduce(kron,[minus,minus,minus,a,a])
     fidelity = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
 
     println("Fidelity of Hadamard application $(fidelity)")
@@ -214,7 +217,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time ψt_end ψ_target2
     println("Data saved.")
 end
 
