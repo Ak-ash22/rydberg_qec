@@ -27,10 +27,11 @@ function main(N_trajectories::Int)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
     
     ψ_ideal = α .* reduce(kron,[b,b,b,a,a]) + β .* reduce(kron,[a,a,a,a,a])
+    # ψ_ideal = reduce(kron,[b,b,b,a,a])
     ψ_target = ψ_ideal / norm(ψ_ideal);
 
     # # --- Preallocate Arrays ---
-    population_data = Dict(key => zeros(length(tspan1)+length(tspan3)) for key in (:a,:b,:c,:a1,:a2))
+    population_data = Dict(key => zeros(length(tspan1)+length(tspan2)) for key in (:a,:b,:c,:a1,:a2))
     # σx_exp = Dict(key => [] for key in (:a,:b,:c))
 
 
@@ -67,18 +68,20 @@ function main(N_trajectories::Int)
     println("Phaseflip code encoding done successfully.\n")
 
     println("Applying hadamards...")
-    ψt_end = virtual_z_full * ψt[end]
+    ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
+    ψt_end /= norm(ψt_end)
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    
+    population_data[:a][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom1,ψt))
+    population_data[:b][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom2,ψt))
+    population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom3,ψt))
 
-    # population_data[:a][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom1,ψt))
-    # population_data[:b][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom2,ψt))
-    # population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] = real(expect(n1_atom3,ψt))
-
-    ψt_end = virtual_z_full * ψt[end]
-    plus = sqrt(0.5).*a + sqrt(0.5).*b
-    minus = sqrt(0.5).*a - sqrt(0.5).*b
-    # ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
-    ψ_target2 = reduce(kron,[minus,minus,minus,a,a])
+    ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
+    ψt_end /= norm(ψt_end)
+    plus = sqrt(1/2) .* a + sqrt(1/2) .* b
+    minus = sqrt(1/2) .* a - sqrt(1/2) .* b
+    ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
+    # ψ_target2 = reduce(kron,[plus,plus,plus,a,a])
     fidelity = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
 
     println("Fidelity of Hadamard application $(fidelity)")

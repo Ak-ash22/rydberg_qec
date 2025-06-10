@@ -87,7 +87,7 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
 
         Ω = 1.0
         Δ = 100
-        return [Ω/2, Ω/2, Ω/2, Ω/2, Ω/2, Ω/2, Δ, Δ, Δ]
+        return [Ω, Ω, Ω, Ω, Ω, Ω, Δ, Δ, Δ]
         
     
     #### Ancilla driving mode
