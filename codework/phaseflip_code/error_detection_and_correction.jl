@@ -26,7 +26,7 @@ function main(N_trajectories::Int)
     full_basis = CompositeBasis([NLevelBasis(3) for _ in 1:total_qubits]...)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
     
-    ψ_ideal = α .* reduce(kron,[b,b,b,a,a]) + β .* reduce(kron,[a,a,a,a,a])
+    ψ_ideal = α .* reduce(kron,[b,b,b, a,a]) + β .* reduce(kron,[a,a,a,a,a])
     # ψ_ideal = reduce(kron,[b,b,b,a,a])
     ψ_target = ψ_ideal / norm(ψ_ideal);
 
