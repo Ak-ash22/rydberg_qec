@@ -73,9 +73,9 @@ function params()
         # :Δ2_0 => 23.0,                    # Detuning at t=0 for ancillas
         # :Δac_0 => 1048.0,                 # Detuning at t=0 for Correcting Atom A or Atom c
         :Δb_0 => 2000.0,                    # Detuning at t=0 for Correcting Atom B
-        :T1 => (π + sqrt(2)π + 3π),              # Evolution time for step 1 -- Encoding Protocol
+        :T1 => (π + sqrt(2)π + π),              # Evolution time for step 1 -- Encoding Protocol
         # :T_y => pi/2,          
-        :T2 => 100π/4,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
+        :T2 => 25π,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (1 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
         :T5 => pi/2                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C

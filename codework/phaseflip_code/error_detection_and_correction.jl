@@ -25,13 +25,10 @@ function main(N_trajectories::Int)
 
     full_basis = CompositeBasis([NLevelBasis(3) for _ in 1:total_qubits]...)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
-    
-    ψ_ideal = α .* reduce(kron,[b,b,b, a,a]) + β .* reduce(kron,[a,a,a,a,a])
-    # ψ_ideal = reduce(kron,[b,b,b,a,a])
-    ψ_target = ψ_ideal / norm(ψ_ideal);
+
 
     # # --- Preallocate Arrays ---
-    population_data = Dict(key => zeros(length(tspan1)+length(tspan2)) for key in (:a,:b,:c,:a1,:a2))
+    population_data = Dict(key => zeros(length(tspan1)+2*length(tspan2)+length(tspan3)) for key in (:a,:b,:c,:a1,:a2))
     # σx_exp = Dict(key => [] for key in (:a,:b,:c))
 
 
@@ -46,18 +43,6 @@ function main(N_trajectories::Int)
 
     println("Encoding Commencing...")
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)  # pass through to `solve`
-    # println("Encoding complete.\n")
-
-    evolved_fidelity = abs(ψt[end].data' * ψ_target)^2
-    println("Encoding successfull with fidelity $(evolved_fidelity)\n")
-
-    # ######################################################## Dynamical Phase Correction
-    # Δ_dyn,_,_ = compute_dynamical_phase(tout)
-    # ψt_end_corrected = apply_dynamical_phase(Δ_dyn, ψt[end])
-    # ψt_end_dyn = ψt_end_corrected.data
-
-    # encoding_fidelity = abs(ψt_end_dyn' * ψ_target)^2
-    # println("Adiabatic sweep successfull with encoding fidelity $(encoding_fidelity)\n")
 
     #Track Jumps Info
     # has_error = length(jumps) > 0
@@ -65,9 +50,7 @@ function main(N_trajectories::Int)
     population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
     population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
 
-    println("Phaseflip code encoding done successfully.\n")
-
-    println("Applying hadamards...")
+    # println("Applying hadamards...")
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
@@ -80,131 +63,146 @@ function main(N_trajectories::Int)
     ψt_end /= norm(ψt_end)
     plus = sqrt(1/2) .* a + sqrt(1/2) .* b
     minus = sqrt(1/2) .* a - sqrt(1/2) .* b
-    ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
-    # ψ_target2 = reduce(kron,[plus,plus,plus,a,a])
+    ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
     fidelity = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
 
-    println("Fidelity of Hadamard application $(fidelity)")
 
-    # println("Hadamards applied.\n")
+    println("Phaseflip code encoding done successfully with fidelity $(fidelity).\n")
+
+
+    println("Applying hadamards...")
+    ψt_end = virtual_z_full * (ψt_end)
+    ψt_end /= norm(ψt_end)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    
+    population_data[:a][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom1,ψt))
+    population_data[:b][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom2,ψt))
+    population_data[:c][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom3,ψt))
+
+    ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
+    ψt_end /= norm(ψt_end)
+
+    ψ_target3 = α .* reduce(kron,[b,b,b,a,a]) - β .* reduce(kron, [a,a,a,a,a])
+    fidelity = abs((dagger(Ket(full_basis,ψ_target3)) * ψt_end)^2)
+
+    println("Fidelity after hadamard is $(fidelity)")
 
     println("Driving Ancillas ...")
-    # ψt_end = virtual_z_full * ψt[end]
     # ψ3_0 = reduce(kron,[b,b,a,a,a])
     # ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
 
-    # @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ3_0,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
-    # ancilla1_population = real(expect(n1_ancilla1, ψt))
-    # ancilla2_population = real(expect(n1_ancilla2,ψt))
+    ancilla1_population = real(expect(n1_ancilla1, ψt))
+    ancilla2_population = real(expect(n1_ancilla2,ψt))
 
-    # population_data[:a][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] = real(expect(n1_atom1,ψt))
-    # population_data[:b][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] = real(expect(n1_atom2,ψt))
-    # population_data[:c][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] = real(expect(n1_atom3,ψt))
-    # population_data[:a1][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] = ancilla1_population
-    # population_data[:a2][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] = ancilla2_population
+    population_data[:a][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = real(expect(n1_atom1,ψt))
+    population_data[:b][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = real(expect(n1_atom2,ψt))
+    population_data[:c][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = real(expect(n1_atom3,ψt))
+    population_data[:a1][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = ancilla1_population
+    population_data[:a2][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = ancilla2_population
 
-    # println("Ancillas drive complete.\n")
+    println("Ancillas drive complete.\n")
 
-    # # # has_error = length(jumps) > 0
+    # # has_error = length(jumps) > 0
 
     # # ####################################################################################################### Error Detection
-    # println("Error Detection Commencing...")
+    println("Error Detection Commencing...")
 
-    # rand_float = round(rand();digits=1)
+    rand_float = round(rand();digits=1)
 
-    # if rand_float < round(ancilla1_population[end];digits=1) && rand_float < round(ancilla2_population[end];digits=1)
-    #     println("Both Ancilla errors detected.")
-    #     ancilla1 = 1.0
-    #     ancilla2 = 1.0
-    #     # detected_error = true
+    if rand_float < round(ancilla1_population[end];digits=1) && rand_float < round(ancilla2_population[end];digits=1)
+        println("Both Ancilla errors detected.")
+        ancilla1 = 1.0
+        ancilla2 = 1.0
+        # detected_error = true
         
-    # elseif rand_float < round(ancilla2_population[end];digits=1)
-    #     println("Ancilla 2 error detected.")
-    #     ancilla1 = 0.0
-    #     ancilla2 = 1.0
-    #     # detected_error = true
+    elseif rand_float < round(ancilla2_population[end];digits=1)
+        println("Ancilla 2 error detected.")
+        ancilla1 = 0.0
+        ancilla2 = 1.0
+        # detected_error = true
 
-    # elseif rand_float < round(ancilla1_population[end];digits=1)
-    #     println("Ancilla 1 error detected.")
-    #     ancilla1 = 1.0
-    #     ancilla2 = 0.0
-    #     # detected_error = true
+    elseif rand_float < round(ancilla1_population[end];digits=1)
+        println("Ancilla 1 error detected.")
+        ancilla1 = 1.0
+        ancilla2 = 0.0
+        # detected_error = true
 
-    # else 
-    #     println("No errors detected.")
-    #     ancilla1 = 0.0
-    #     ancilla2 = 0.0
-    # end
-    # # ################################################################################################### Error Correction
-    # # println("Error Correction Commencing...")
+    else 
+        println("No errors detected.")
+        ancilla1 = 0.0
+        ancilla2 = 0.0
+    end
+    # ################################################################################################### Error Correction
+    # println("Error Correction Commencing...")
 
-    # ψ1 = ψt[end]
+    ψ1 = ψt[end]
 
-    # #Correcting Atom B
-    # if ancilla1 == 1.0 && ancilla2 == 1.0
+    #Correcting Atom B
+    if ancilla1 == 1.0 && ancilla2 == 1.0
 
-    #     println("Error Correction commencing for Atom B")
+        println("Error Correction commencing for Atom B")
 
-    #     fb = f_correct_factory(2)
-    #     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fb,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-    #     # has_correction_error = length(jumps) > 0
+        fb = f_correct_factory(2)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fb,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+        # has_correction_error = length(jumps) > 0
 
-    #     # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+        # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
 
-    #     corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
-    #     corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
-    #     corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
-    #     corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
-    #     corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
+        corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
+        corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
+        corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
+        corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
 
-    # #Correcting Atom A
-    # elseif ancilla1 == 1.0
+    #Correcting Atom A
+    elseif ancilla1 == 1.0
 
-    #     println("Error Correction commencing for Atom A")
+        println("Error Correction commencing for Atom A")
 
-    #     fa = f_correct_factory(1)
-    #     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fa,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-    #     # has_correction_error = length(jumps) > 0
+        fa = f_correct_factory(1)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fa,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+        # has_correction_error = length(jumps) > 0
 
-    #     # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
-    #     corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
-    #     corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
-    #     corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
-    #     corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
-    #     corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+        corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
+        corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
+        corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
+        corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
+        corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
 
-    # #Correcting Atom C
-    # elseif ancilla2 == 1.0
+    #Correcting Atom C
+    elseif ancilla2 == 1.0
 
-    #     println("Error Correction commencing for Atom C")
+        println("Error Correction commencing for Atom C")
         
-    #     fc = f_correct_factory(3)
-    #     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fc,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-    #     # has_correction_error = length(jumps) > 0
+        fc = f_correct_factory(3)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fc,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+        # has_correction_error = length(jumps) > 0
 
-    #     # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
-    #     corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
-    #     corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
-    #     corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
-    #     corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
-    #     corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+        corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
+        corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
+        corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
+        corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
+        corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
 
 
-    # #No Errors Detected
-    # else
-    #     f0 = f_correct_factory(0)
-    #     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,f0,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-    #     # has_correction_error = length(jumps) > 0
+    #No Errors Detected
+    else
+        f0 = f_correct_factory(0)
+        @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,f0,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+        # has_correction_error = length(jumps) > 0
 
-    #     # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+        # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         
-    #     corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
-    #     corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
-    #     corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
-    #     corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
-    #     corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
-    # end
+        corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
+        corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
+        corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
+        corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
+        corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+    end
 
     # println("Applying hadamards back...")
     # @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan6,ψt[end],f_end,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
