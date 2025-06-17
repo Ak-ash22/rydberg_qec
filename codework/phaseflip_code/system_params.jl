@@ -77,7 +77,7 @@ function params()
         # :T_y => pi/2,          
         :T2 => 25π,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
-        :T4 => (1 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
+        :T4 => (2 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
         :T5 => pi/2                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
     )
 end

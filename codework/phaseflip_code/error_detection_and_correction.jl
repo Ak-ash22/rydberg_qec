@@ -88,10 +88,10 @@ function main(N_trajectories::Int)
     println("Fidelity after hadamard is $(fidelity)")
 
     println("Driving Ancillas ...")
-    # ψ3_0 = reduce(kron,[b,b,a,a,a])
-    # ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
+    ψ3_0 = α .* reduce(kron,[b,a,b,a,a]) - β .* reduce(kron, [a,b,a,a,a])
+    ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
 
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ3_0,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
     ancilla1_population = real(expect(n1_ancilla1, ψt))
     ancilla2_population = real(expect(n1_ancilla2,ψt))
@@ -211,7 +211,7 @@ function main(N_trajectories::Int)
     # append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
     # append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
     # println("Hadamards applied.")
-
+    ψt_end = ψt[end]/norm(ψt[end])
 
     print("Trajectory $N_trajectories Complete.\n")
 
