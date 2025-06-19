@@ -65,7 +65,7 @@ function params()
         :Ω1 => 1.0,                         # Rabi frequency 1
         :Ω2 => 1.0,                         # Rabi frequency 2          
         :γ_Decay => 0.0,                    # Decay rate on the qubits
-        :γ_dephase => 0.0,                 # Dephasing rate on the qubits
+        :γ_dephase => 1e-4,                 # Dephasing rate on the qubits
         :V_nn => -1000.0,                   # rydberg interaction on the qubits
         # :δ1 => 0.108,                     # adiabatic sweep rate for encoding qubits
         # :δ2 => 0.108,                     # adiabatic sweep rate for ancillas and correction
@@ -78,7 +78,7 @@ function params()
         :T2 => 25π,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (2 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
-        :T5 => pi/2                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
+        :T5 => 25π                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
     )
 end
 

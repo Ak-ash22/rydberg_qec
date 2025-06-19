@@ -28,7 +28,7 @@ function main(N_trajectories::Int)
 
 
     # # --- Preallocate Arrays ---
-    population_data = Dict(key => zeros(length(tspan1)+2*length(tspan2)+length(tspan3)) for key in (:a,:b,:c,:a1,:a2))
+    population_data = Dict(key => zeros(length(tspan1)+2*length(tspan2)+length(tspan3)+length(tspan5)) for key in (:a,:b,:c,:a1,:a2))
     # σx_exp = Dict(key => [] for key in (:a,:b,:c))
 
 
@@ -88,10 +88,10 @@ function main(N_trajectories::Int)
     println("Fidelity after hadamard is $(fidelity)")
 
     println("Driving Ancillas ...")
-    ψ3_0 = α .* reduce(kron,[b,a,b,a,a]) - β .* reduce(kron, [a,b,a,a,a])
-    ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
+    # ψ3_0 = α .* reduce(kron,[a,b,b,a,a]) - β .* reduce(kron, [b,a,a,a,a])
+    # ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
 
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ3_0,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
     ancilla1_population = real(expect(n1_ancilla1, ψt))
     ancilla2_population = real(expect(n1_ancilla2,ψt))
@@ -137,7 +137,7 @@ function main(N_trajectories::Int)
     # ################################################################################################### Error Correction
     # println("Error Correction Commencing...")
 
-    ψ1 = ψt[end]
+    ψ1 = ψt[end]/norm(ψt[end])
 
     #Correcting Atom B
     if ancilla1 == 1.0 && ancilla2 == 1.0
@@ -204,21 +204,31 @@ function main(N_trajectories::Int)
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
     end
 
-    # println("Applying hadamards back...")
-    # @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan6,ψt[end],f_end,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-
-    # append!(corrected_σx_exp[:a], real(expect(σx_a, ψt)))
-    # append!(corrected_σx_exp[:b], real(expect(σx_b, ψt)))
-    # append!(corrected_σx_exp[:c], real(expect(σx_c, ψt)))
-    # println("Hadamards applied.")
+    println("Applying hadamards back...")
     ψt_end = ψt[end]/norm(ψt[end])
+    ψt_end = virtual_z_full * (ψt_end)
+    ψt_end /= norm(ψt_end)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan5,ψt_end,f5,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    
+    population_data[:a][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom1,ψt))
+    population_data[:b][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom2,ψt))
+    population_data[:c][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom3,ψt))
+
+    ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
+    ψt_end /= norm(ψt_end)
+
+    ψ_target = α .* reduce(kron,[plus,plus,plus,b,a]) - β .* reduce(kron,[minus,minus,minus,b,a])
+    fidelity = abs((dagger(Ket(full_basis,ψ_target)) * ψt_end)^2)
+
+    println("Fidelity after hadamard is $(fidelity)")
+
 
     print("Trajectory $N_trajectories Complete.\n")
 
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time ψt_end ψ_target2
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time ψt_end 
     println("Data saved.")
 end
 

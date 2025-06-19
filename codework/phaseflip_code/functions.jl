@@ -132,9 +132,12 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         end
         return [Ω1/2, Ω1/2, Ω2/2, Ω2/2, 2*p.Δ_0, p.V_nn, p.V_nn]
 
-    # #### Hadamard Mode 2
-    # elseif mode == :T5
-    #     return [p.Ω/2, p.Ω/2, p.Ω/2]
+    #### Hadamard Mode 2
+    elseif mode == :T5
+
+        Ω = 1.0
+        Δ = 100
+        return [Ω, Ω, Ω, Ω, Ω, Ω, Δ, Δ, Δ]
 
     end
 
@@ -265,7 +268,7 @@ function Ht2(t)
 end
 
 
-const C_encoding = lindbaldian_dephase(0.0,total_qubits,[i for i in 1:total_qubits])    
+const C_encoding = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])    
 const Cdagger_encoding = [adjoint(c) for c in C_encoding]
 
 function f1(t,ψ)
@@ -459,65 +462,44 @@ end
 
 
 # ###############################################################################################Timespan for applying hadamards - Step 5
-# const tspan6 = [0.0:0.1:(T_z+T_y);]  #Time span for driving atoms 1-2
+const tspan5 = [0.0: 0.1: T5;]
 
-# # σy = -im * transition(basis,1,2) + im * transition(basis,2,1)
-# σy_a = full_operator(σy, total_qubits, [1])
-# σy_b = full_operator(σy, total_qubits, [2])
-# σy_c = full_operator(σy, total_qubits, [3])
-# σz_a = full_operator(σz, total_qubits, [1])
-# σz_b = full_operator(σz, total_qubits, [2])
-# σz_c = full_operator(σz, total_qubits, [3])
+# const coeff5 = [t->get_qubit_parameters(p,t,:T5)]  
+const H5 = LazySum([coeff2[1](tspan5[1])[i] for i ∈ 1:9], [σx_0r_atom1, σx_1r_atom1, σx_0r_atom2, σx_1r_atom2, σx_0r_atom3, σx_1r_atom3, n_r_atom1, n_r_atom2, n_r_atom3])
 
-# const coeff6 = [t->get_qubit_parameters(p,t,:T5)]
-# const H_end_y = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σy_a, σy_b, σy_c])
-# const H_end_z = LazySum([coeff6[1](tspan6[1])[i] for i ∈ 1:3],[σz_a, σz_b, σz_c])
+function Ht5(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method from time steps T1 to T2.
+        -- H2: Hamiltonian for applying hadamards on atoms A-B-C for time T1:T2
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
+
+    coeffs = coeff2[1](t)
+    for i in eachindex(coeffs)
+        H5.factors[i] = coeffs[i]
+    end
+    return H5
+
+end
 
 
-# function Ht_end(t)
-# """
-# Function to calculate the time dependent Hamiltonian for the MCWF method for applying hadamrd back to atoms A-B-C.
-#     - H_end: Hamiltonian for applying hadamards on atoms A-B-C for time T4:T5
-
-# Args:
-#     t:: Float64: Time
-# Returns:
-#     H:: LazySum: Time dependent Hamiltonian
-# """
+function f5(t,ψ)
+    """
+    Function to calculate the time evolution of the system using the MCWF method for driving atoms 1-2.
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+    """
     
-#     if t<(T_z) || t==(T_z)
-#         coeffs = coeff6[1](t)
-#         for i in eachindex(coeffs)
-#             H_end_z.factors[i] = coeffs[i]
-#         end
-#         return H_end_z
-
-#     elseif t<(T_y+T_z) || t==(T_y+T_z)
-#         coeffs = coeff6[1](t)
-#         for i in eachindex(coeffs)
-#             H_end_y.factors[i] = coeffs[i]
-#         end
-#         return H_end_y
-#     end 
-# end
-
-# function f_end(t,ψ)
-#     """
-#     Function to calculate the time evolution of the system using the MCWF method.
-    
-#     Args:
-#         t:: Float64: Time
-    
-#     Returns:
-#         H:: LazySum: Time dependent Hamiltonian
-#         C:: Array{Operator}: Array of decay operators acting on the system
-#         Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-#     """
-    
-#     H = Ht_end(t)
-#     return H, C, Cdagger
-# end
-
+        H = Ht5(t)
+        return H, C, Cdagger
+    end
     
 
 # ############################################################################################################### Functions to compute the dynamical phase
