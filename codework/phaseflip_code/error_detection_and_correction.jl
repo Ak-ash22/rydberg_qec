@@ -2,8 +2,8 @@ include("functions.jl")
 
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
-script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/phaseflip_code"
-# script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code"
+# script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/phaseflip_code"
+script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code"
 data_folder = joinpath(script_dir, "results_data")
 
 if !isdir(data_folder)
@@ -33,9 +33,10 @@ function main(N_trajectories::Int)
 
 
     corrected_population_data = Dict(key => zeros(length(tspan4)) for key in (:a,:b,:c,:a1,:a2))
-    # has_error = false
-    # detected_error = false
-    # has_correction_error = false
+    has_encoding_error = false
+    has_error = false
+    detected_error = false
+    has_correction_error = false
     
     println("Starting the simulation...")
  
@@ -45,7 +46,7 @@ function main(N_trajectories::Int)
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)  # pass through to `solve`
 
     #Track Jumps Info
-    # has_error = length(jumps) > 0
+    has_encoding_error = length(jumps) > 0
     population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
     population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
     population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
@@ -55,6 +56,8 @@ function main(N_trajectories::Int)
     ψt_end /= norm(ψt_end)
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
+    #Track Jumps Info
+    has_encoding_error = length(jumps) > 0
     population_data[:a][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom1,ψt))
     population_data[:b][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom2,ψt))
     population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom3,ψt))
@@ -93,6 +96,8 @@ function main(N_trajectories::Int)
 
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
+    #Track Jumps Info
+    has_error = length(jumps) > 0
     ancilla1_population = real(expect(n1_ancilla1, ψt))
     ancilla2_population = real(expect(n1_ancilla2,ψt))
 
@@ -104,9 +109,7 @@ function main(N_trajectories::Int)
 
     println("Ancillas drive complete.\n")
 
-    # # has_error = length(jumps) > 0
-
-    # # ####################################################################################################### Error Detection
+    ####################################################################################################### Error Detection
     println("Error Detection Commencing...")
 
     rand_float = round(rand();digits=1)
@@ -115,19 +118,19 @@ function main(N_trajectories::Int)
         println("Both Ancilla errors detected.")
         ancilla1 = 1.0
         ancilla2 = 1.0
-        # detected_error = true
+        detected_error = true
         
     elseif rand_float < round(ancilla2_population[end];digits=1)
         println("Ancilla 2 error detected.")
         ancilla1 = 0.0
         ancilla2 = 1.0
-        # detected_error = true
+        detected_error = true
 
     elseif rand_float < round(ancilla1_population[end];digits=1)
         println("Ancilla 1 error detected.")
         ancilla1 = 1.0
         ancilla2 = 0.0
-        # detected_error = true
+        detected_error = true
 
     else 
         println("No errors detected.")
@@ -146,9 +149,7 @@ function main(N_trajectories::Int)
 
         fb = f_correct_factory(2)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fb,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-        # has_correction_error = length(jumps) > 0
-
-        # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
+        has_correction_error = length(jumps) > 0
 
         corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
         corrected_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2, ψt))
@@ -163,7 +164,7 @@ function main(N_trajectories::Int)
 
         fa = f_correct_factory(1)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fa,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-        # has_correction_error = length(jumps) > 0
+        has_correction_error = length(jumps) > 0
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
@@ -179,7 +180,7 @@ function main(N_trajectories::Int)
         
         fc = f_correct_factory(3)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,fc,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-        # has_correction_error = length(jumps) > 0
+        has_correction_error = length(jumps) > 0
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         corrected_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1, ψt))
@@ -193,7 +194,7 @@ function main(N_trajectories::Int)
     else
         f0 = f_correct_factory(0)
         @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan4,ψ1,f0,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-        # has_correction_error = length(jumps) > 0
+        has_correction_error = length(jumps) > 0
 
         # fidelity_data[1:length(tout)] .+= real(expect(n_abc, ψt))
         
@@ -228,7 +229,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time ψt_end 
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time 
     println("Data saved.")
 end
 
