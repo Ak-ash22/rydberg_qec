@@ -4,7 +4,7 @@ include("functions.jl")
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/phaseflip_code"
 script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code"
-data_folder = joinpath(script_dir, "results_data")
+data_folder = joinpath(script_dir, "dephase_$(γ_dephase)")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
@@ -28,8 +28,10 @@ function main(N_trajectories::Int)
 
 
     # # --- Preallocate Arrays ---
-    population_data = Dict(key => zeros(length(tspan1)+2*length(tspan2)+length(tspan3)+length(tspan5)) for key in (:a,:b,:c,:a1,:a2))
-    # σx_exp = Dict(key => [] for key in (:a,:b,:c))
+    population_data = Dict(key => zeros(length(tspan1)+2*length(tspan2)+length(tspan3)) for key in (:a,:b,:c,:a1,:a2))
+    final_step_population_data = Dict(key => zeros(length(tspan5)) for key in (:a, :b, :c,))
+    S1_data = zeros(2*length(tspan2)+length(tspan3)+length(tspan4)+length(tspan5))
+    S2_data = zeros(2*length(tspan2)+length(tspan3)+length(tspan4)+length(tspan5))
 
 
     corrected_population_data = Dict(key => zeros(length(tspan4)) for key in (:a,:b,:c,:a1,:a2))
@@ -61,16 +63,19 @@ function main(N_trajectories::Int)
     population_data[:a][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom1,ψt))
     population_data[:b][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom2,ψt))
     population_data[:c][length(tspan1)+1:length(tspan1)+length(tout)] .+= real(expect(n1_atom3,ψt))
+    S1_data[1:length(tout)] .+= real(expect(S1,ψt))
+    S2_data[1:length(tout)] .+= real(expect(S2,ψt))
+
 
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
     plus = sqrt(1/2) .* a + sqrt(1/2) .* b
     minus = sqrt(1/2) .* a - sqrt(1/2) .* b
     ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
-    fidelity = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
+    fidelity_after_encoding = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
 
 
-    println("Phaseflip code encoding done successfully with fidelity $(fidelity).\n")
+    println("Phaseflip code encoding done successfully with fidelity $(fidelity_after_encoding).\n")
 
 
     println("Applying hadamards...")
@@ -81,6 +86,8 @@ function main(N_trajectories::Int)
     population_data[:a][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom1,ψt))
     population_data[:b][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom2,ψt))
     population_data[:c][length(tspan1)+length(tspan2)+1:length(tspan1)+length(tspan2)+length(tout)] .+= real(expect(n1_atom3,ψt))
+    S1_data[1+length(tspan2):length(tspan2)+length(tout)] .+= real(expect(S1,ψt))
+    S2_data[1+length(tspan2):length(tspan2)+length(tout)] .+= real(expect(S2,ψt))
 
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
@@ -90,8 +97,8 @@ function main(N_trajectories::Int)
 
     println("Fidelity after hadamard is $(fidelity)")
 
-    println("Driving Ancillas ...")
-    # ψ3_0 = α .* reduce(kron,[a,b,b,a,a]) - β .* reduce(kron, [b,a,a,a,a])
+    # println("Driving Ancillas ...")
+    # ψ3_0 = α .* reduce(kron,[b,a,b,a,a]) - β .* reduce(kron, [a,b,a,a,a])
     # ψ3_0 = Ket(full_basis, ComplexF32.(ψ3_0))
 
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
@@ -106,6 +113,8 @@ function main(N_trajectories::Int)
     population_data[:c][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = real(expect(n1_atom3,ψt))
     population_data[:a1][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = ancilla1_population
     population_data[:a2][length(tspan1)+2*length(tspan2)+1:length(tspan1)+2*length(tspan2)+length(tout)] = ancilla2_population
+    S1_data[2*length(tspan2)+1:2*length(tspan2)+length(tout)] .+= real(expect(S1,ψt))
+    S2_data[2*length(tspan2)+1:2*length(tspan2)+length(tout)] .+= real(expect(S2,ψt))
 
     println("Ancillas drive complete.\n")
 
@@ -137,8 +146,7 @@ function main(N_trajectories::Int)
         ancilla1 = 0.0
         ancilla2 = 0.0
     end
-    # ################################################################################################### Error Correction
-    # println("Error Correction Commencing...")
+    ################################################################################################### Error Correction
 
     ψ1 = ψt[end]/norm(ψt[end])
 
@@ -156,6 +164,8 @@ function main(N_trajectories::Int)
         corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
         corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        S1_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S1,ψt))
+        S2_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S2,ψt))
 
     #Correcting Atom A
     elseif ancilla1 == 1.0
@@ -172,6 +182,8 @@ function main(N_trajectories::Int)
         corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
         corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        S1_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S1,ψt))
+        S2_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S2,ψt))
 
     #Correcting Atom C
     elseif ancilla2 == 1.0
@@ -188,6 +200,8 @@ function main(N_trajectories::Int)
         corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
         corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        S1_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S1,ψt))
+        S2_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S2,ψt))
 
 
     #No Errors Detected
@@ -203,6 +217,8 @@ function main(N_trajectories::Int)
         corrected_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3, ψt))
         corrected_population_data[:a1][1:length(tout)] .+= real(expect(n1_ancilla1, ψt))
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n1_ancilla2, ψt))
+        S1_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S1,ψt))
+        S2_data[2*length(tspan2)+length(tspan3)+1:2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(S2,ψt))
     end
 
     println("Applying hadamards back...")
@@ -211,17 +227,19 @@ function main(N_trajectories::Int)
     ψt_end /= norm(ψt_end)
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan5,ψt_end,f5,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     
-    population_data[:a][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom1,ψt))
-    population_data[:b][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom2,ψt))
-    population_data[:c][length(tspan1)+2*length(tspan2)+length(tspan3)+1:length(tspan1)+2*length(tspan2)+length(tspan3)+length(tout)] .+= real(expect(n1_atom3,ψt))
+    final_step_population_data[:a][1:length(tout)] .+= real(expect(n1_atom1,ψt))
+    final_step_population_data[:b][1:length(tout)] .+= real(expect(n1_atom2,ψt))
+    final_step_population_data[:c][1:length(tout)] .+= real(expect(n1_atom3,ψt))
+    S1_data[2*length(tspan2)+length(tspan3)+length(tspan4)+1:2*length(tspan2)+length(tspan3)+length(tspan4)+length(tout)] .+= real(expect(S1,ψt))
+    S2_data[2*length(tspan2)+length(tspan3)+length(tspan4)+1:2*length(tspan2)+length(tspan3)+length(tspan4)+length(tout)] .+= real(expect(S2,ψt))
 
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
 
-    ψ_target = α .* reduce(kron,[plus,plus,plus,b,a]) - β .* reduce(kron,[minus,minus,minus,b,a])
-    fidelity = abs((dagger(Ket(full_basis,ψ_target)) * ψt_end)^2)
+    ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
+    fidelity_after_correction = abs((dagger(Ket(full_basis,ψ_target)) * ψt_end)^2)
 
-    println("Fidelity after hadamard is $(fidelity)")
+    println("Fidelity after hadamard is $(fidelity_after_correction)")
 
 
     print("Trajectory $N_trajectories Complete.\n")
@@ -229,7 +247,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data end_time 
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
     println("Data saved.")
 end
 

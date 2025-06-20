@@ -109,28 +109,34 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         if t <= π
             Ω1 = 1.0
             Ω2 = 0.0
+            Ω3 = 0.0
         elseif t < (π+sqrt(2)π)
             Ω1 = 0.0
             Ω2 = 1.0
+            Ω3 = 0.0
         else 
-            Ω1 = 1.0
+            Ω1 = 0.0
             Ω2 = 0.0
+            Ω3 = 1.0
         end
-        return [Ω1/2, Ω2/2, Ω2/2, p.Δ_0, p.V_nn]
+        return [Ω1/2, Ω3/2, Ω2/2, Ω2/2, p.Δ_0, p.V_nn]
 
     #### Correction mode for Atom B
     elseif mode == :T4b
         if t <= π
             Ω1 = 1.0
             Ω2 = 0.0
+            Ω3 = 0.0
         elseif t < (π+sqrt(2)π)
             Ω1 = 0.0
             Ω2 = 1.0
+            Ω3 = 0.0
         else 
-            Ω1 = 1.0
+            Ω1 = 0.0
             Ω2 = 0.0
+            Ω3 = 1.0
         end
-        return [Ω1/2, Ω1/2, Ω2/2, Ω2/2, 2*p.Δ_0, p.V_nn, p.V_nn]
+        return [Ω1/2, Ω1/2, Ω3/2, Ω3/2, Ω2/2, Ω2/2, 2*p.Δ_0, p.V_nn, p.V_nn]
 
     #### Hadamard Mode 2
     elseif mode == :T5
@@ -373,14 +379,14 @@ const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom A or C or 
 
 #Hamiltonian for Error Correction of Atom A
 const coeff4 = [t->get_qubit_parameters(p,t,:T4a)]
-const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:5],[σx_1r_ancilla1, σx_0r_atom1, σx_1r_atom1, n_r_atom1, nn_r14])
+const H_correct_a = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_ancilla1, σx_0r_ancilla1, σx_0r_atom1, σx_1r_atom1, n_r_atom1, nn_r14])
 
 #Hamiltonian for Error Correction of Atom B
 const coeff5 = [t->get_qubit_parameters(p,t,:T4b)]
-const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:7],[σx_1r_ancilla1, σx_1r_ancilla2, σx_0r_atom2, σx_1r_atom2, n_r_atom2, nn_r24, nn_r25])
+const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:9],[σx_1r_ancilla1, σx_1r_ancilla2, σx_0r_ancilla1, σx_0r_ancilla2, σx_0r_atom2, σx_1r_atom2, n_r_atom2, nn_r24, nn_r25])
 
 #Hamiltonian for Error Correction of Atom C
-const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:5],[σx_1r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
+const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_ancilla2, σx_0r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
 const H_no_correct = LazySum([0.0],[σx_0r_atom1])
@@ -672,3 +678,8 @@ const n1_atom2 = full_operator(n1,total_qubits,[2])
 const n1_atom3 = full_operator(n1,total_qubits,[3])
 const n1_ancilla1 = full_operator(n1,total_qubits,[4])
 const n1_ancilla2 = full_operator(n1,total_qubits,[5])
+
+#Stabilizer Generators
+σx = transition(NLevelBasis(3),1,2) + transition(NLevelBasis(3),2,1)
+const S1 = full_operator(σx,total_qubits,[1,2])
+const S2 = full_operator(σx,total_qubits,[2,3])
