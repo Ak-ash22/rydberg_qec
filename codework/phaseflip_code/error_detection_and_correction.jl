@@ -236,10 +236,14 @@ function main(N_trajectories::Int)
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
 
-    ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
-    fidelity_after_correction = abs((dagger(Ket(full_basis,ψ_target)) * ψt_end)^2)
+    ρ_final = ptrace(ψt_end, [4,5])
 
-    println("Fidelity after hadamard is $(fidelity_after_correction)")
+
+    ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
+    ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])
+
+    fidelity_after_correction = real(tr(sqrt(sqrt(ρ_final.data)*ρ_target.data*sqrt(ρ_final.data)))^2)
+    println("Fidelity after correction is $(fidelity_after_correction)")
 
 
     print("Trajectory $N_trajectories Complete.\n")
