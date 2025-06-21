@@ -15,8 +15,8 @@ function average_populations()
 
     # --- Initialize accumulators for all population types ---
     avg_population_data = Dict(key => copy(population_data[key]) for key in (:a,:b,:c,:a1,:a2))
-    avg_corrected_population_data = Dict(key => copy(σx_exp[key]) for key in (:a,:b,:c,:a1,:a2))
-    avg_final_step_population_data = Dict(key => copy(corrected_σx_exp[key]) for key in (:a,:b,:c))
+    avg_corrected_population_data = Dict(key => copy(corrected_population_data[key]) for key in (:a,:b,:c,:a1,:a2))
+    avg_final_step_population_data = Dict(key => copy(final_step_population_data[key]) for key in (:a,:b,:c))
     avg_S1_data = copy(S1_data)
     avg_S2_data = copy(S2_data)
     
@@ -47,8 +47,8 @@ function average_populations()
         avg_S1_data .+= S1_data
         avg_S2_data .+= S2_data
 
-        avg_fidelity_after_encoding .+= fidelity_after_encoding
-        avg_fidelity_after_correction .+= fidelity_after_correction
+        avg_fidelity_after_encoding += fidelity_after_encoding
+        avg_fidelity_after_correction += fidelity_after_correction
     end
 
     # --- Compute Averages ---
@@ -64,8 +64,8 @@ function average_populations()
     avg_S1_data .*= 1 / num_files
     avg_S2_data .*= 1 / num_files
 
-    avg_fidelity_after_encoding .*= 1 / num_files
-    avg_fidelity_after_correction .*= 1 / num_files
+    avg_fidelity_after_encoding *= 1 / num_files
+    avg_fidelity_after_correction *= 1 / num_files
 
     # --- Save Averaged Data ---
     final_file_path = base_path * "N_atoms=5_γ_dephase=0.0001_Ntraj=$(num_files)_avg.jld2"
