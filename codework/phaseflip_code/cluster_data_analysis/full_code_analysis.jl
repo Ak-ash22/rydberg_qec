@@ -3,8 +3,8 @@ using JLD2, FileIO
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_0.00001/"
-    file_pattern = "N_atoms=5_γ_dephase=0.00001_Ntraj="
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
+    file_pattern = "N_atoms=5_γ_dephase=1.0e-5_Ntraj="
 
     num_files = 1000  # Number of files to process
 

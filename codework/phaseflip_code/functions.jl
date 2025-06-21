@@ -163,7 +163,7 @@ function lindbaldian_dephase(γ_dephase::Float64,total_qubits::Int64,site::Array
         C:: Array{Matrix}: Array of dephase operators acting on the system
     """
     basis = NLevelBasis(3)
-    σ_z= transition(basis,1,1) - transition(basis,2,2)
+    σ_z= transition(basis,1,1) - transition(basis,2,2) 
     σ_z = Operator(σ_z.basis_l, σ_z.basis_r, SparseMatrixCSC{ComplexF32, Int64}(σ_z.data))
 
     identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
@@ -274,8 +274,8 @@ function Ht2(t)
 end
 
 
-const C_encoding = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])    
-const Cdagger_encoding = [adjoint(c) for c in C_encoding]
+const C = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])
+const Cdagger = [adjoint(c) for c in C]
 
 function f1(t,ψ)
 """
@@ -292,7 +292,7 @@ Returns:
 
     H = Ht1(t)
 
-    return H, C_encoding, Cdagger_encoding
+    return H, C, Cdagger
 end
 
 function f2(t,ψ)
@@ -308,7 +308,7 @@ Returns:
 
     H = Ht2(t)
 
-    return H, C_encoding, Cdagger_encoding 
+    return H, C, Cdagger
 end
 
 # ######################################################################################################## Driving atoms 1-2 - Step 3
@@ -334,9 +334,6 @@ nn_r35 = full_operator(n_r, total_qubits, [3,5])
 const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
 const H3 = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:13],[σx_1r_atom1, σx_1r_atom2, σx_1r_atom3, σx_0r_ancilla1, σx_1r_ancilla1, σx_0r_ancilla2,
                     σx_1r_ancilla2, n_r_ancilla1, n_r_ancilla2, nn_r14, nn_r24, nn_r25, nn_r35])
-
-const C = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])
-const Cdagger = [adjoint(c) for c in C]
 
 function Ht3(t)
 """
