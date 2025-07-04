@@ -53,7 +53,7 @@ function initialize_system()
 
     Returns: The wavefunction of the system at t=0.
     "
-    ψ_system = wavefunction(total_qubits,α,β,2)
+    ψ_system = wavefunction(total_qubits,α,β,ϕ,2)
 
     return ψ_system
 end

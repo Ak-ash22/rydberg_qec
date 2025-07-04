@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH -J case1_1
+#SBATCH -J case1
 #SBATCH -o logs_auto_runner/%x_%a_log.out
 #SBATCH -e logs_auto_runner/%x_%a_log.err
 #SBATCH --cpus-per-task=2
