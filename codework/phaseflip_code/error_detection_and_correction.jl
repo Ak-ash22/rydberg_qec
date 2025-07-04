@@ -3,8 +3,8 @@ include("functions.jl")
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/phaseflip_code"
-script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code"
-data_folder = joinpath(script_dir, "dephase_$(γ_dephase)")
+script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/avg_analysis/"
+data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/case1")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
@@ -256,7 +256,7 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
     println("Data saved.")
 end
 

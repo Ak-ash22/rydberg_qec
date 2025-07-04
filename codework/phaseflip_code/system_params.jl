@@ -6,11 +6,12 @@ const a = ComplexF64[1,0,0]
 const b = ComplexF64[0,1,0]
 const r = ComplexF64[0,0,1]
 
-const α = sqrt(2/3)        # Coefficient of |1> {|b>} state
+const α = sqrt(1/5)        # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
+const ϕ = 5.746
 
 
-function wavefunction(num_qubits::Int64, α, β, site::Int64)
+function wavefunction(num_qubits::Int64, α, β, ϕ, site::Int64)
     """
     Function to initialize the wavefunction of the N-qubit system with given parameters
     initialized at given site.
@@ -31,7 +32,7 @@ function wavefunction(num_qubits::Int64, α, β, site::Int64)
     @assert 0.0<=β<=1.0 "β should be between 0 and 1"
 
     site_states = [a for _ in 1:num_qubits]
-    site_states[site] = α .* b + β .* a
+    site_states[site] = α .* b + exp(1im * ϕ) * β .* a
 
     ψ = reduce(kron, site_states)
     return ψ
