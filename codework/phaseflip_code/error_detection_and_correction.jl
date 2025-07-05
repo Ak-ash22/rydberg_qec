@@ -71,7 +71,7 @@ function main(N_trajectories::Int)
     ψt_end /= norm(ψt_end)
     plus = sqrt(1/2) .* a + sqrt(1/2) .* b
     minus = sqrt(1/2) .* a - sqrt(1/2) .* b
-    ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
+    ψ_target2 = α .* reduce(kron,[plus,plus,plus,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
     fidelity_after_encoding = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
 
 
@@ -92,7 +92,7 @@ function main(N_trajectories::Int)
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
 
-    ψ_target3 = α .* reduce(kron,[b,b,b,a,a]) - β .* reduce(kron, [a,a,a,a,a])
+    ψ_target3 = α .* reduce(kron,[b,b,b,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron, [a,a,a,a,a])
     fidelity = abs((dagger(Ket(full_basis,ψ_target3)) * ψt_end)^2)
 
     println("Fidelity after hadamard is $(fidelity)")
@@ -240,10 +240,10 @@ function main(N_trajectories::Int)
 
 
     if ancilla1 == 0.0 && ancilla2 == 0.0
-        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) + β .* reduce(kron,[minus,minus,minus,a,a])
+        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
         ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])  
     else
-        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - β .* reduce(kron,[minus,minus,minus,a,a])
+        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
         ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])
     end
 

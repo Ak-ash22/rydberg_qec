@@ -32,7 +32,7 @@ function wavefunction(num_qubits::Int64, α, β, ϕ, site::Int64)
     @assert 0.0<=β<=1.0 "β should be between 0 and 1"
 
     site_states = [a for _ in 1:num_qubits]
-    site_states[site] = α .* b + exp(1im * ϕ) * β .* a
+    site_states[site] = α .* b + (exp(1im * ϕ) * β) .* a
 
     ψ = reduce(kron, site_states)
     return ψ
