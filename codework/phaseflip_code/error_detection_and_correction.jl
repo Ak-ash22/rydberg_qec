@@ -15,7 +15,7 @@ function main(N_trajectories::Int)
     """
     Main function to run the simulation
     """
-    println("Running the simulation with N_trajectories = $N_trajectories")
+    println("Running the simulation with trajectory number = $N_trajectories")
 
     i = N_trajectories
 
@@ -256,7 +256,14 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
+    file_path = "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2"
+    if isfile(file_path)
+        println("File already exists. Overwriting the file: $file_path")
+    else
+        println("Saving data to: $file_path")
+        @save file_path population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time
+    end
+    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
     println("Data saved.")
 end
 

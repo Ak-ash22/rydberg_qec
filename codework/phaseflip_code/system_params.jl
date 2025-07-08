@@ -8,7 +8,7 @@ const r = ComplexF64[0,0,1]
 
 const α = sqrt(1/5)        # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
-const ϕ = 5.746
+const ϕ = 0.915
 
 
 function wavefunction(num_qubits::Int64, α, β, ϕ, site::Int64)

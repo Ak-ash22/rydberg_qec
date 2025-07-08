@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH -J case1
-#SBATCH -o logs_auto_runner/%x_%a_log.out
-#SBATCH -e logs_auto_runner/%x_%a_log.err
+#SBATCH -J c1p1
+#SBATCH -o logs_auto_runner/%x/%A_%a_log.out
+#SBATCH -e logs_auto_runner/%x/%A_%a_log.err
 #SBATCH --cpus-per-task=4
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
@@ -10,7 +10,7 @@
 #SBATCH --mail-type=FAIL,END
 #SBATCH --array=1-1000
 
-# -------- limit every library to the 3 CPUs you asked for ----------
+# -------- limit every library to the 4 CPUs you asked for ----------
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK      
 export OPENBLAS_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
