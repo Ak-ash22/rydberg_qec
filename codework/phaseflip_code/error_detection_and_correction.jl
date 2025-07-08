@@ -284,7 +284,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         exit(1)
     end
     id = parse(Int, ARGS[1])
-    N_trajectories = (id % 10) + 1
-    ϕ = phase_list[fld(id,10)+1]
+    N_trajectories = (id % 1000) + 1
+    ϕ = phase_list[fld(id,1000)+1]
     main(N_trajectories, ϕ)
 end
