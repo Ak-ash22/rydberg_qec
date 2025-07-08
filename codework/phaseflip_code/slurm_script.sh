@@ -6,9 +6,9 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
-#SBATCH -p epyc-256
+#SBATCH -p epyc-768
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=1-1000
+#SBATCH --array=0-9999
 
 # -------- limit every library to the 4 CPUs you asked for ----------
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK      

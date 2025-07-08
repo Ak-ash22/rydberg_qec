@@ -8,7 +8,8 @@ const r = ComplexF64[0,0,1]
 
 const α = sqrt(1/5)        # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
-const ϕ = 0.915
+phase_list = [0.915, 3.234, 2.458, 2.769, 5.551, 0.359, 1.227, 4.389, 3.466, 1.899]
+# const ϕ = 0.915
 
 
 function wavefunction(num_qubits::Int64, α, β, ϕ, site::Int64)
@@ -39,7 +40,7 @@ function wavefunction(num_qubits::Int64, α, β, ϕ, site::Int64)
 end
 
 
-function initialize_system()
+function initialize_system(ϕ::Float64)
     "
     System:
 

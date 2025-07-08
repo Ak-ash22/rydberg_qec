@@ -1,26 +1,28 @@
 include("functions.jl")
 
-#Saving the output
+# id = N_trajectories
+# const ϕ = phase_list[(id // 10) + 1]
+
+# Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/phaseflip_code"
 script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/avg_analysis/"
-data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/case1/phase_$(ϕ)")
+data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/case1")
 
 if !isdir(data_folder)
     println("Directory does not exist. Creating directory...: $data_folder")
     mkpath(data_folder)
 end
 
-function main(N_trajectories::Int)
+function main(N_trajectories::Int, ϕ::Float64)
     """
     Main function to run the simulation
     """
-    println("Running the simulation with trajectory number = $N_trajectories")
+    println("Running the simulation with trajectory number = $(N_trajectories) and phase = $(ϕ)")
 
     i = N_trajectories
-
     start_time = time()
-    ψ0 = initialize_system()
+    ψ0 = initialize_system(ϕ)
     println("The system has been initialized.")
 
     full_basis = CompositeBasis([NLevelBasis(3) for _ in 1:total_qubits]...)
@@ -256,7 +258,13 @@ function main(N_trajectories::Int)
     end_time = time() - start_time
 
     println("Simulation complete. Saving data...")
-    file_path = "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2"
+    # --- Save the data ---
+    full_data_folder = joinpath(data_folder, "phase_$(ϕ)")
+    if !isdir(full_data_folder)
+        println("Directory does not exist. Creating directory...: $full_data_folder")
+        mkpath(full_data_folder)
+    end
+    file_path = "$(full_data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2"
     if isfile(file_path)
         println("File already exists. Overwriting the file: $file_path")
     else
@@ -275,6 +283,8 @@ if abspath(PROGRAM_FILE) == @__FILE__
         println("Usage: julia main.jl <N_trajectories>")
         exit(1)
     end
-    N_trajectories = parse(Int, ARGS[1])
-    main(N_trajectories)
+    id = parse(Int, ARGS[1])
+    N_trajectories = (id % 10) + 1
+    ϕ = phase_list[fld(id,10)+1]
+    main(N_trajectories, ϕ)
 end
