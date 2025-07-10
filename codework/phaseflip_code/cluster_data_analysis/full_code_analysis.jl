@@ -3,8 +3,13 @@ using JLD2, FileIO
 function average_populations()
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
-    file_pattern = "N_atoms=5_γ_dephase=1.0e-5_Ntraj="
+    # base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
+    dephase = 0.1
+    case = 1
+    ϕ = 0.915
+    
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/avg_analysis/dephase_$(dephase)/case$(case)/phase_$(ϕ)/"
+    file_pattern = "N_atoms=5_γ_dephase=$(dephase)_phase=$(ϕ)_Ntraj="
 
     num_files = 1000  # Number of files to process
 
@@ -68,7 +73,7 @@ function average_populations()
     avg_fidelity_after_correction *= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = base_path * "N_atoms=5_γ_dephase=0.00001_Ntraj=$(num_files)_avg.jld2"
+    final_file_path = base_path * "N_atoms=5_γ_dephase=$(dephase)_phase=$(ϕ)_Ntraj=$(num_files)_avg.jld2"
     @save final_file_path avg_population_data avg_corrected_population_data avg_final_step_population_data avg_S1_data avg_S2_data avg_fidelity_after_encoding avg_fidelity_after_correction # avg_fidelity_data
 
     println("Averaged populations saved to $final_file_path")

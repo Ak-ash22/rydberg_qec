@@ -67,7 +67,7 @@ function params()
         :Ω1 => 1.0,                         # Rabi frequency 1
         :Ω2 => 1.0,                         # Rabi frequency 2          
         :γ_Decay => 0.0,                    # Decay rate on the qubits
-        :γ_dephase => 0.1,                 # Dephasing rate on the qubits
+        :γ_dephase => 0.01,                 # Dephasing rate on the qubits
         :V_nn => -1000.0,                   # rydberg interaction on the qubits
         # :δ1 => 0.108,                     # adiabatic sweep rate for encoding qubits
         # :δ2 => 0.108,                     # adiabatic sweep rate for ancillas and correction
