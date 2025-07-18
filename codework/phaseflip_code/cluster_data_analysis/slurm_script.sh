@@ -6,7 +6,10 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=20:00:00
 #SBATCH --mem-per-cpu=4G
-#SBATCH -p physik-fleischhauer
+#SBATCH -p epyc-768
 #SBATCH --mail-type=FAIL,END
+#SBATCH --array=0-199
 
-~/julia-1.11.3/bin/julia full_code_analysis.jl
+id=$SLURM_ARRAY_TASK_ID
+
+~/julia-1.11.3/bin/julia full_code_analysis.jl $id

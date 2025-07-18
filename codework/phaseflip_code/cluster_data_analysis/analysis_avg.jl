@@ -4,13 +4,10 @@ dephase_list = [0.1, 0.01, 0.001, 0.0001, 1.0e-5]
 case_list = [1,2,3,4]
 phase_list = [0.915, 3.234, 2.458, 2.769, 5.551, 0.359, 1.227, 4.389, 3.466, 1.899]
 
-function average_populations()
+function average_populations(dephase, case, ϕ)
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
     # base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
-    dephase = 0.1
-    case = 1
-    ϕ = 0.915
     
     base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/avg_analysis/dephase_$(dephase)/case$(case)/phase_$(ϕ)/"
     file_pattern = "N_atoms=5_γ_dephase=$(dephase)_phase=$(ϕ)_Ntraj="
@@ -131,5 +128,16 @@ end
 
 
 # --- Run the function ---
-average_populations()
-# save_jump_files()
+# --- Parse command-line arguments ---
+if abspath(PROGRAM_FILE) == @__FILE__
+    if length(ARGS) < 1
+        println("Usage: julia main.jl <N_trajectories>")
+        exit(1)
+    end
+    id = parse(Int, ARGS[1])
+    dephase = dephase_list[fld(id,40)+1]
+    case = case_list[fld(id, 10) + 1]
+    ϕ = (id % 10) + 1
+    average_populations(dephase, case, ϕ)
+end
+#######Run slurm batch over 200 jobs#############
