@@ -137,7 +137,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
     id = parse(Int, ARGS[1])
     dephase = dephase_list[fld(id,40)+1]
     case = case_list[fld(id, 10) + 1]
-    ϕ = (id % 10) + 1
+    ϕ = phase_list[(id % 10) + 1]
     average_populations(dephase, case, ϕ)
 end
 #######Run slurm batch over 200 jobs#############
