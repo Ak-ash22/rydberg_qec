@@ -390,9 +390,9 @@ const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:9],[σx_1r_anci
 const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_ancilla2, σx_0r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
-identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
-identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-const H_no_correct = LazySum([1.0],[full_operator(identity,total_qubits,[1,2,3])])
+custom_identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
+custom_identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
+const H_no_correct = LazySum([0.0],[full_operator(identity,total_qubits,[1,2,3])])
 
 function Ht_correct(t,site)
 """
@@ -512,10 +512,8 @@ function f5(t,ψ)
     
 # ###############################################################################################Timespan for storage between encoding and syndrome measurement - Step 6 
 const tspan6 = [0.0: 0.1: T_storage;]
-identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
-identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
 
-const H_storage = LazySum([1.0],[full_operator(identity,total_qubits,[1,2,3])]) 
+const H_storage = LazySum([0.0],[full_operator(custom_identity,total_qubits,[1,2,3,4,5])]) 
 
 function Ht_storage(t)
     """
