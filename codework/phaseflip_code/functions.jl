@@ -17,8 +17,8 @@ function full_operator(gate, qubits, sites)
     - operator: AbstractOperator (the full operator acting on the entire system)
     """
     # Ensure the gate is an AbstractOperator
-    if !(gate isa AbstractOperator) && gate !== 0
-        throw(ArgumentError("The gate must be an AbstractOperator or 0 for identity"))
+    if !(gate isa AbstractOperator)
+        throw(ArgumentError("The gate must be an AbstractOperator"))
     end
 
     # Create an identity operator for each qubit
@@ -27,15 +27,13 @@ function full_operator(gate, qubits, sites)
     identity_ops = [identity for _ in 1:qubits]
     
     # Replace the identity operator at site `i` with the provided gate
-    if gate == 0
-        return tensor(reverse(identity_ops)...)
-    else
-        for j in sites
-            identity_ops[j] = gate
-        end
-        # Return the Kronecker product of all operators
-        return tensor(reverse(identity_ops)...)
+
+    for j in sites
+        identity_ops[j] = gate
     end
+    # Return the Kronecker product of all operators
+    return tensor(reverse(identity_ops)...)
+
 end
 
 
@@ -392,7 +390,9 @@ const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:9],[σx_1r_anci
 const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_ancilla2, σx_0r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
-const H_no_correct = LazySum([1.0],[full_operator(0,total_qubits,[0])])
+identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
+identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
+const H_no_correct = LazySum([1.0],[full_operator(identity,total_qubits,[1,2,3])])
 
 function Ht_correct(t,site)
 """
@@ -512,8 +512,10 @@ function f5(t,ψ)
     
 # ###############################################################################################Timespan for storage between encoding and syndrome measurement - Step 6 
 const tspan6 = [0.0: 0.1: T_storage;]
+identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
+identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
 
-const H_storage = LazySum([1.0],[full_operator(0,3,[0])]) 
+const H_storage = LazySum([1.0],[full_operator(identity,total_qubits,[1,2,3])]) 
 
 function Ht_storage(t)
     """
