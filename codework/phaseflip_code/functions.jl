@@ -391,8 +391,8 @@ const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_anci
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
 custom_identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
-custom_identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-const H_no_correct = LazySum([0.0],[full_operator(identity,total_qubits,[1,2,3])])
+custom_identity = Operator(custom_identity.basis_l, custom_identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(custom_identity.data))
+const H_no_correct = LazySum([0.0],[full_operator(custom_identity,total_qubits,[1,2,3])])
 
 function Ht_correct(t,site)
 """

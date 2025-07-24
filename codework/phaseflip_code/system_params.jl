@@ -8,7 +8,7 @@ const r = ComplexF64[0,0,1]
 
 const α = sqrt(1/5)        # Coefficient of |1> {|b>} state
 const β = sqrt(1-α^2)       # Coefficient of |0> {|a>} state
-phase_list = [0.915, 3.234, 2.458, 2.769, 5.551, 0.359, 1.227, 4.389, 3.466, 1.899]
+# phase_list = [0.915, 3.234, 2.458, 2.769, 5.551, 0.359, 1.227, 4.389, 3.466, 1.899]
 # const ϕ = 0.915
 
 
@@ -67,7 +67,7 @@ function params()
         :Ω1 => 1.0,                         # Rabi frequency 1
         :Ω2 => 1.0,                         # Rabi frequency 2          
         :γ_Decay => 0.0,                    # Decay rate on the qubits
-        :γ_dephase => 1.0e-5,                 # Dephasing rate on the qubits
+        :γ_dephase => 0.0,                 # Dephasing rate on the qubits
         :V_nn => -1000.0,                   # rydberg interaction on the qubits
         # :δ1 => 0.108,                     # adiabatic sweep rate for encoding qubits
         # :δ2 => 0.108,                     # adiabatic sweep rate for ancillas and correction

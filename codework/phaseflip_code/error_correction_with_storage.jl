@@ -79,7 +79,6 @@ function main(N_trajectories::Int)
     println("Phaseflip code encoding done successfully with fidelity $(fidelity_after_encoding).\n")
 
     ################ Storage of qubits
-    ψt_end = ψt[end]/norm(ψt[end])
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan6,ψt_end,f_storage,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
     fidelity_after_storage = abs((dagger(Ket(full_basis,ψ_target2)) * ψt[end]/norm(ψt_end))^2)
 
