@@ -67,7 +67,7 @@ function params()
         :Ω1 => 1.0,                         # Rabi frequency 1
         :Ω2 => 1.0,                         # Rabi frequency 2          
         :γ_Decay => 0.0,                    # Decay rate on the qubits
-        :γ_dephase => 0.01,                 # Dephasing rate on the qubits
+        :γ_dephase => 1.0e-5,                 # Dephasing rate on the qubits
         :V_nn => -1000.0,                   # rydberg interaction on the qubits
         # :δ1 => 0.108,                     # adiabatic sweep rate for encoding qubits
         # :δ2 => 0.108,                     # adiabatic sweep rate for ancillas and correction
@@ -80,7 +80,8 @@ function params()
         :T2 => 25π,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (2 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
-        :T5 => 25π                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
+        :T5 => 25π,                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
+        :T_storage => 2*268
     )
 end
 
@@ -89,5 +90,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5]
+    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5], p[:T_storage]
 end

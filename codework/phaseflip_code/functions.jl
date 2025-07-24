@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T2, T3, T4, T5 = unpack_params()
+const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T2, T3, T4, T5, T_storage = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, qubits, sites)
@@ -27,12 +27,15 @@ function full_operator(gate, qubits, sites)
     identity_ops = [identity for _ in 1:qubits]
     
     # Replace the identity operator at site `i` with the provided gate
-    for j in sites
-        identity_ops[j] = gate
+    if gate == 0
+        return tensor(reverse(identity_ops)...)
+    else
+        for j in sites
+            identity_ops[j] = gate
+        end
+        # Return the Kronecker product of all operators
+        return tensor(reverse(identity_ops)...)
     end
-
-    # Return the Kronecker product of all operators
-    return tensor(reverse(identity_ops)...)
 end
 
 
@@ -144,6 +147,9 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         Ω = 1.0
         Δ = 100
         return [Ω, Ω, Ω, Ω, Ω, Ω, Δ, Δ, Δ]
+
+    elseif mode == :T_storage
+        return [0]
 
     end
 
@@ -386,7 +392,7 @@ const H_correct_b = LazySum([coeff5[1](tspan4[1])[i] for i ∈ 1:9],[σx_1r_anci
 const H_correct_c = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_1r_ancilla2, σx_0r_ancilla2, σx_0r_atom3, σx_1r_atom3, n_r_atom3, nn_r35])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
-const H_no_correct = LazySum([0.0],[σx_0r_atom1])
+const H_no_correct = LazySum([1.0],[full_operator(0,total_qubits,[0])])
 
 function Ht_correct(t,site)
 """
@@ -504,7 +510,41 @@ function f5(t,ψ)
         return H, C, Cdagger
     end
     
+# ###############################################################################################Timespan for storage between encoding and syndrome measurement - Step 6 
+const tspan6 = [0.0: 0.1: T_storage;]
 
+const H_storage = LazySum([1.0],[full_operator(0,3,[0])]) 
+
+function Ht_storage(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method.
+        -- H_storage: Hamiltonian for doing nothing during the storage time on atoms A-B-C for time T_storage
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
+
+    return H_storage
+
+end
+
+
+function f_storage(t,ψ)
+    """
+    Function to calculate the time evolution of the system using the MCWF method for driving atoms 1-2.
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+    """
+    
+        H = Ht_storage(t)
+        return H, C, Cdagger
+    end
+    
 # ############################################################################################################### Functions to compute the dynamical phase
 
 # struct PrecomputedOps{T}
