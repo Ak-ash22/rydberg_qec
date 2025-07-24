@@ -1,0 +1,61 @@
+using JLD2, FileIO
+
+function average_populations()
+    # --- Path to data ---
+    # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
+    # base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
+    dephase = 1.0e-5
+    ϕ = 0.915
+
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/"
+    file_pattern = "N_atoms=5_γ_dephase=$(dephase)_case1_Ntraj="
+
+    num_files = 1000  # Number of files to process
+
+    # --- Load the first file to get available keys and array size dynamically ---
+    first_file_path = base_path * file_pattern * "1.jld2"
+
+    @load first_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction
+
+    # --- Initialize accumulators for all population types ---
+    avg_fidelity_after_encoding = fidelity_after_encoding
+    avg_fidelity_after_storage = fidelity_after_storage
+    avg_fidelity_after_correction = fidelity_after_correction
+
+
+    println("Processing $num_files files...")
+
+    # --- Parallelized Loop for File Processing ---
+    for i in 2:num_files
+        file_path = base_path * file_pattern * string(i) * ".jld2"
+
+        @load file_path population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction   #fidelity_data # Load the dictionary
+        
+        avg_fidelity_after_encoding += fidelity_after_encoding
+        avg_fidelity_after_storage += fidelity_after_storage
+        avg_fidelity_after_correction += fidelity_after_correction
+    end
+
+    # --- Compute Averages ---
+    avg_fidelity_after_encoding *= 1 / num_files
+    avg_fidelity_after_storage *= 1 / num_files
+    avg_fidelity_after_correction *= 1 / num_files
+
+    # --- Save Averaged Data ---
+    final_file_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/N_atoms=5_γ_dephase=$(dephase)_case1_phase=$(ϕ)_Ntraj=$(num_files)_avg.jld2"
+    @save final_file_path avg_fidelity_after_encoding avg_fidelity_after_storage avg_fidelity_after_correction
+
+    println("Averaged populations saved to $final_file_path")
+end
+
+# --- Run the function ---
+# --- Parse command-line arguments ---
+if abspath(PROGRAM_FILE) == @__FILE__
+    if length(ARGS) < 1
+        println("Usage: julia main.jl <N_trajectories>")
+        exit(1)
+    end
+    id = parse(Int, ARGS[1])
+    average_populations()
+end
+#######Run slurm batch over 200 jobs#############

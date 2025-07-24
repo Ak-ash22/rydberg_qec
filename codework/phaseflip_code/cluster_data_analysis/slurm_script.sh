@@ -8,8 +8,8 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH -p epyc-768
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=0-20
+#SBATCH --array=1
 
 id=$SLURM_ARRAY_TASK_ID
 
-~/julia-1.11.3/bin/julia analysis_double_avg.jl $id
+~/julia-1.11.3/bin/julia analysis_avg_with_storage.jl $id
