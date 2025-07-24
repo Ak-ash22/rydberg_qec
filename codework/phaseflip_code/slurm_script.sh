@@ -8,7 +8,7 @@
 #SBATCH --mem-per-cpu=4G
 #SBATCH -p epyc-768
 #SBATCH --mail-type=FAIL,END
-#SBATCH --array=0-9999
+#SBATCH --array=0-999
 
 # -------- limit every library to the 4 CPUs you asked for ----------
 export JULIA_NUM_THREADS=$SLURM_CPUS_PER_TASK      
@@ -21,4 +21,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 id=$SLURM_ARRAY_TASK_ID
 
-~/julia-1.11.3/bin/julia error_detection_and_correction.jl $id
+~/julia-1.11.3/bin/julia error_correction_with_storage.jl $id

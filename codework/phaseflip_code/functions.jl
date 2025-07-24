@@ -17,8 +17,8 @@ function full_operator(gate, qubits, sites)
     - operator: AbstractOperator (the full operator acting on the entire system)
     """
     # Ensure the gate is an AbstractOperator
-    if !(gate isa AbstractOperator)
-        throw(ArgumentError("The gate must be an AbstractOperator"))
+    if !(gate isa AbstractOperator) && gate !== 0
+        throw(ArgumentError("The gate must be an AbstractOperator or 0 for identity"))
     end
 
     # Create an identity operator for each qubit
