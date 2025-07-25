@@ -29,7 +29,7 @@ function average_populations()
     for i in 2:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
-        @load file_path population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction   #fidelity_data # Load the dictionary
+        @load file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction   #fidelity_data # Load the dictionary
         
         avg_fidelity_after_encoding += fidelity_after_encoding
         avg_fidelity_after_storage += fidelity_after_storage
