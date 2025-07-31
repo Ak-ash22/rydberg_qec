@@ -6,12 +6,12 @@ const a = ComplexF64[1,0,0]
 const b = ComplexF64[0,1,0]
 const r = ComplexF64[0,0,1]
 
-const α = 0                 # Coefficient of |g> state
+const α = 0.0                 # Coefficient of |g> state
 const β = sqrt(1-α^2)       # Coefficient of |r> state
-const ϕ = 0
+const ϕ = 0.0
 
 
-function wavefunction(num_qubits::Int64, α, β, ϕ::Float64, site::Int64)
+function wavefunction(num_qubits::Int64, α, β, ϕ::Float64, site::Vector)
     """
     Function to initialize the wavefunction of the N-qubit system with given parameters
     initialized at given site.
@@ -26,14 +26,15 @@ function wavefunction(num_qubits::Int64, α, β, ϕ::Float64, site::Int64)
         ψ:: Array{ComplexF64,1}: Wavefunction of the system
     """
 
-    @assert 1<=site<=num_qubits "Site should be between 1 and $num_qubits"
+    # @assert 1<=site<=num_qubits "Site should be between 1 and $num_qubits"
     @assert 1<=num_qubits "Number of qubits should be greater than 0"
     @assert 0.0<=α<=1.0 "α should be between 0 and 1"
     @assert 0.0<=β<=1.0 "β should be between 0 and 1"
 
     site_states = [a for _ in 1:num_qubits]
-    site_states[site] = α .* b + (exp(1im * ϕ) * β) .* a
-
+    for j in site
+        site_states[j] = α .* b + (exp(1im * ϕ) * β) .* a
+    end
     ψ = reduce(kron, site_states)
     return ψ
 end
@@ -53,7 +54,7 @@ function initialize_system()
 
     Returns: The wavefunction of the system at t=0.
     "
-    ψ_system = wavefunction(total_qubits,α,β,ϕ,site=2)
+    ψ_system = wavefunction(total_qubits,α,β,ϕ,[2])
 
     return ψ_system
 end
@@ -67,7 +68,7 @@ function params()
         :γ_Decay => 0.0,        # Decay rate on the qubits
         :γ_dephase => 0.0,      # Dephasing rate on the qubits
         :V_nn => -1000.0,      # rydberg interaction on the qubits
-        :Δ0_0 => 1000.0,        # Detuning at t=0 for encoding qubits and ancillas (CNOT gate)
+        :Δ_0 => 1000.0,        # Detuning at t=0 for encoding qubits and ancillas (CNOT gate)
         :T1 => (π + sqrt(2)π + π),    # Evolution time for step 1 -- Encoding A-B-C
         # :T2 => pi/2,     # Evolution time for step 2
         # :T3 => 154.0     # Evolution time for step 3

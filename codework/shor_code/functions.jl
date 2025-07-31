@@ -2,7 +2,9 @@ include("system_params.jl")
 include("dependencies.jl")
 const Ω, γ_Decay, γ_dephase, V_nn, Δ_0, T1 = unpack_params()
 
-##Helper Functions 
+##############################################################################################  Helper Functions 
+const local_basis = NLevelBasis(3)
+
 function full_operator(gate, total_qubits, sites)
     """
     Applies an arbitrary gate on a specified site `i` in a `total_qubits`-qubit system.
@@ -21,18 +23,24 @@ function full_operator(gate, total_qubits, sites)
         throw(ArgumentError("The gate must be an AbstractOperator"))
     end
 
-    # Create an identity operator for each qubit
-    identity = transition(NLevelBasis(2), 1,1) + transition(NLevelBasis(2), 2,2)
-    identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-    identity_ops = [identity for _ in 1:total_qubits]
+    # # Create an identity operator for each qubit
+    # identity = transition(NLevelBasis(3), 1,1) + transition(NLevelBasis(3), 2,2) + transition(NLevelBasis(3), 3,3)
+    # identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
+    # identity_ops = [identity for _ in 1:total_qubits]
     
-    # Replace the identity operator at site `i` with the provided gate
-    for j in sites
-        identity_ops[j] = gate
-    end
+    # # Replace the identity operator at site `i` with the provided gate
+    # for j in sites
+    #     identity_ops[j] = gate
+    # end
 
-    # Return the Kronecker product of all operators
-    return tensor(reverse(identity_ops)...)
+    # # Return the Kronecker product of all operators
+    # return tensor(reverse(identity_ops)...)
+
+    @assert issorted(sites) "sites must be given in ascending order"
+
+    cb = tensor(reverse(ntuple(_ -> local_basis, total_qubits))...)
+    ops = ntuple(_ -> gate, length(sites))
+    return LazyTensor(cb, sites, ops)
 end
 
 
@@ -82,6 +90,28 @@ function get_qubit_parameters(p::qubit_parameters,t::Float64,mode::Symbol)
         return [Ω1/2, Ω2/2, Ω2/2, p.Δ_0, p.V_nn, Ω2/2, Ω2/2, p.Δ_0, p.V_nn]
     end
 end
+
+function get_full_wavefunction(psi::Array, sites::Vector)
+
+    site_states = [a for _ in 1:total_qubits]
+    for j in sites
+        site_states[j] = psi[j]
+    end
+    ψ_system = reduce(kron, site_states)
+
+    return ψ_system
+end
+
+
+
+
+
+
+
+
+
+
+
 
 ################################################################################################ Lindbaldian Operators
 function lindbaldian_decay(γ_Decay::Float64,site::Array)
@@ -133,11 +163,11 @@ function lindbaldian_dephase(γ_dephase::Float64,total_qubits::Int64,site::Array
 
     identity = transition(basis,1,1) + transition(basis,2,2) + transition(basis,3,3)
     identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-    C = Vector{Operator}(undef, total_qubits)
+    C = Vector{AbstractOperator}(undef, total_qubits)
     
     for i in 1:total_qubits
         if i in site
-            C[i] = sqrt(γ_dephase) .* full_operator(σ_z, total_qubits, [i])
+            C[i] = sqrt(γ_dephase) * full_operator(σ_z, total_qubits, [i])
         else
             C[i] = full_operator(identity, total_qubits, [i])
         end
@@ -160,6 +190,8 @@ n_r = Operator(n_r.basis_l, n_r.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n_r.
 # Parameters for the Atoms -- coefficients for the Hamiltonian
 p = qubit_parameters(γ_Decay, γ_dephase, V_nn, Δ_0)
 
+const C = lindbaldian_dephase(γ_dephase,total_qubits,[i for i in 1:total_qubits])
+const Cdagger = [adjoint(c) for c in C]
 
 ################################################################################################ Step 1: Encoding A-B-C
 #Timespan for driving atoms A-B-C
@@ -209,79 +241,20 @@ function Ht1(t)
 end
 
 
+function f1(t,ψ)
+"""
+Function to calculate the time evolution of the system using the MCWF method.
 
-σx_1 = full_operator(σx, total_qubits, [4])
-σx_2 = full_operator(σx, total_qubits, [5])
-σx_3 = full_operator(σx, total_qubits, [6])
-σx_4 = full_operator(σx, total_qubits, [7])
-σx_5 = full_operator(σx, total_qubits, [8])
-σx_6 = full_operator(σx, total_qubits, [9])
-const n_1 = full_operator(n, total_qubits, [4])
-const n_2 = full_operator(n, total_qubits, [5])
-const n_3 = full_operator(n, total_qubits, [6])
-const n_4 = full_operator(n, total_qubits, [7])
-const n_5 = full_operator(n, total_qubits, [8])
-const n_6 = full_operator(n, total_qubits, [9])
-nn_a1 = full_operator(n, total_qubits, [1,4])
-nn_a2 = full_operator(n, total_qubits, [1,5])
-nn_b3 = full_operator(n, total_qubits, [2,6])
-nn_b4 = full_operator(n, total_qubits, [2,7])
-nn_c5 = full_operator(n, total_qubits, [3,8])
-nn_c6 = full_operator(n, total_qubits, [3,9])
+Args:
+    t:: Float64: Time
 
-const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
+Returns:
+    H:: LazySum: Time dependent Hamiltonian
+    C:: Array{Operator}: Array of decay operators acting on the system
+    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+"""
 
-#Figure out a way to apply Hadamard gate on the second qubit!!
-const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:6],[σy_a, σy_c, n_a, n_c, nn_ab, nn_bc])
+    H = Ht1(t)
 
-
-const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-const H3 = LazySum([coeff3[1](tspan[1])[i] for i ∈ 1:18],[σx_1, σx_2, σx_3, σx_4, σx_5, σx_6, n_1, n_2, n_3, n_4, n_5, n_6, nn_a1, nn_a2, nn_b3, nn_b4, nn_c5, nn_c6])
-# const H3 = LazySum([coeff3[1](tspan[1])[i] for i ∈ 1:6],[σx_1, σx_2, n_1, n_2, nn_a1, nn_a2]) 
-
-function Ht(t)
-    if t<T1 || t==T1
-        coeffs = coeff1[1](t)
-        for i in eachindex(coeffs)
-            H1.factors[i] = coeffs[i]
-        end
-        return H1
-
-    elseif t<(T1+T2) || t==(T1+T2)
-        coeffs = coeff2[1](t-T1)
-        for i in eachindex(coeffs)
-            H2.factors[i] = coeffs[i]
-        end
-        return H2
-
-    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
-        coeffs = coeff3[1](t-T1-T2)
-        for i in eachindex(coeffs)
-            H3.factors[i] = coeffs[i]
-        end
-        return H3
-    end
+    return H, C, Cdagger
 end
-
-
-#Helper function for mcwf_dynamic
-const C1 = lindbaldian_decay(1e-3,[1,3])
-const Cdagger1 = [adjoint(c) for c in C1]
-
-const C3 = lindbaldian_decay(1e-3,[1,3,4,5,6,7,8,9])
-# const C3 = lindbaldian_decay(1e-3,[1,3,4,5])    
-const Cdagger3 = [adjoint(c) for c in C3]
-
-function Ct(t)
-    if t<(T1+T2) || t==(T1+T2)
-        return C1, Cdagger1
-    elseif t<(T1+T2+T3) || t==(T1+T2+T3)
-        return C3, Cdagger3
-    end
-end
-
-function f(t,ψ)
-    H = Ht(t)
-    return H, Ct(t)...
-end
-
