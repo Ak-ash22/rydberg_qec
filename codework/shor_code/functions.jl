@@ -23,24 +23,24 @@ function full_operator(gate, total_qubits, sites)
         throw(ArgumentError("The gate must be an AbstractOperator"))
     end
 
-    # # Create an identity operator for each qubit
-    # identity = transition(NLevelBasis(3), 1,1) + transition(NLevelBasis(3), 2,2) + transition(NLevelBasis(3), 3,3)
-    # identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-    # identity_ops = [identity for _ in 1:total_qubits]
+    # Create an identity operator for each qubit
+    identity = transition(NLevelBasis(3), 1,1) + transition(NLevelBasis(3), 2,2) + transition(NLevelBasis(3), 3,3)
+    identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
+    identity_ops = [identity for _ in 1:total_qubits]
     
-    # # Replace the identity operator at site `i` with the provided gate
-    # for j in sites
-    #     identity_ops[j] = gate
-    # end
+    # Replace the identity operator at site `i` with the provided gate
+    for j in sites
+        identity_ops[j] = gate
+    end
 
-    # # Return the Kronecker product of all operators
-    # return tensor(reverse(identity_ops)...)
+    # Return the Kronecker product of all operators
+    return tensor(reverse(identity_ops)...)
 
-    @assert issorted(sites) "sites must be given in ascending order"
+    # @assert issorted(sites) "sites must be given in ascending order"
 
-    cb = tensor(reverse(ntuple(_ -> local_basis, total_qubits))...)
-    ops = ntuple(_ -> gate, length(sites))
-    return LazyTensor(cb, sites, ops)
+    # cb = tensor(reverse(ntuple(_ -> local_basis, total_qubits))...)
+    # ops = ntuple(_ -> gate, length(sites))
+    # return LazyTensor(cb, sites, ops)
 end
 
 

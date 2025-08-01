@@ -32,12 +32,12 @@ function main(N_trajectories::Int)
 
     println("Encoding Commencing...")
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)  # pass through to `solve`
-    
+    ψt_end = ψt[end]/ norm(ψt[end])
     println("Encoding done! Calculating Fidelity...")
 
     plus = sqrt(1/2) .* a + sqrt(1/2) .* b
     minus = sqrt(1/2) .* a - sqrt(1/2) .* b
-    ψ_target2 = α .* get_full_wavefunction([plus,plus,plus],[1,2,3]) + (exp(1im * ϕ) * β) .* get_full_wavefunction([minus,minus,minus],[1,2,3])
+    ψ_target2 = α .* get_full_wavefunction([plus,plus,plus],[1,2,3]) +  β .* get_full_wavefunction([minus,minus,minus],[1,2,3])
     fidelity_after_encoding = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
     end_time = time()
 

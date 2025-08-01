@@ -1,12 +1,12 @@
 const n_qubits = 9
 const n_ancillas = 8
-const total_qubits = n_qubits + n_ancillas
+const total_qubits = 5
 
 const a = ComplexF64[1,0,0]
 const b = ComplexF64[0,1,0]
 const r = ComplexF64[0,0,1]
 
-const α = 0.0                 # Coefficient of |g> state
+const α = sqrt(0.5)                # Coefficient of |g> state
 const β = sqrt(1-α^2)       # Coefficient of |r> state
 const ϕ = 0.0
 
