@@ -206,9 +206,9 @@ function main(N_trajectories::Int)
         ket_a2 = basisstate(b2,1)
         ψ_full = reverse(tensor(ψ_abc,ket_a1,ket_a2))
 
-        ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
-        ψ_proj_target = Ket(full_basis,ψ_proj_target)
-        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        ψ_proj_target = α .* reduce(kron,[b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a])
+        ψ_proj_target = Ket(basis_ABC,ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_abc)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
     end
     ################################################################################################### Error Correction
