@@ -204,7 +204,7 @@ function main(N_trajectories::Int)
 
         ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
         ket_a2 = basisstate(b2,1)
-        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
+        ψ_full = reverse(tensor(ψ_abc,ket_a1,ket_a2)...)
 
         ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
