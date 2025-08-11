@@ -130,7 +130,8 @@ function main(N_trajectories::Int)
 
     bA, bB, bC, b1, b2 = ψt[end].basis.bases
     dims = Int[length(b) for b in ψt[end].basis.bases]
-    ψt_end = reshape(ψt[end].data, dims...)
+    ψt_end = normalize(ψt[end])
+    # ψt_end = reshape(ψt[end].data, dims...)
     basis_ABC = CompositeBasis(bA, bB, bC)
 
     rand_float1 = round(rand();digits=1)
@@ -198,17 +199,13 @@ function main(N_trajectories::Int)
         ancilla1 = 0.0
         ancilla2 = 0.0
 
-        ψ_abc = @view ψt_end[:,:,:,1,1]
-        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
-        ψ_abc = ψ_abc / norm(ψ_abc)
+        P00 = embed(full_basis, [4,5], projector(tensor(basisstate(b1,1), basisstate(b2,1))))
+        ψ_full_proj = (P00 * ψt_end) / norm(P00 * ψt_end)
 
-        ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
-        ket_a2 = basisstate(b2,1)
-        ψ_full = reverse(tensor(ψ_abc,ket_a1,ket_a2))
-
-        ψ_proj_target = α .* reduce(kron,[b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a])
-        ψ_proj_target = Ket(basis_ABC,ψ_proj_target)
-        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_abc)^2)
+        ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full_proj)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
     end
     ################################################################################################### Error Correction
