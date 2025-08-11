@@ -145,8 +145,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(3,2)  ###(dim, basis_state)
-        ket_a2 = basisstate(3,2)
+        ket_a1 = basisstate(dims[4],2)  ###(dim, basis_state)
+        ket_a2 = basisstate(dims[5],2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
         
     elseif rand_float1 < round(ancilla2_population[end];digits=1)
@@ -159,8 +159,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(3,1)  ###(dim, basis_state)
-        ket_a2 = basisstate(3,2)
+        ket_a1 = basisstate(dims[4],1)  ###(dim, basis_state)
+        ket_a2 = basisstate(dims[5],2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     elseif rand_float1 < round(ancilla1_population[end];digits=1)
@@ -173,8 +173,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(3,2)  ###(dim, basis_state)
-        ket_a2 = basisstate(3,1)
+        ket_a1 = basisstate(dims[4],2)  ###(dim, basis_state)
+        ket_a2 = basisstate(dims[5],1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     else 
@@ -186,8 +186,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(3,1)  ###(dim, basis_state)
-        ket_a2 = basisstate(3,1)
+        ket_a1 = basisstate(dims[4],1)  ###(dim, basis_state)
+        ket_a2 = basisstate(dims[5],1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
     end
     ################################################################################################### Error Correction
