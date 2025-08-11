@@ -128,9 +128,10 @@ function main(N_trajectories::Int)
     ####################################################################################################### Error Detection
     println("Error Detection Commencing...")
 
+    bA, bB, bC, b1, b2 = ψt[end].basis.bases
     dims = Int[length(b) for b in ψt[end].basis.bases]
     ψt_end = reshape(ψt[end].data, dims...)
-    basis_ABC = CompositeBasis([NLevelBasis(3) for _ in 1:3]...)
+    basis_ABC = CompositeBasis(bA, bB, bC)
 
     rand_float1 = round(rand();digits=1)
     rand_float2 = round(rand();digits=1)
@@ -145,8 +146,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(dims[4],2)  ###(dim, basis_state)
-        ket_a2 = basisstate(dims[5],2)
+        ket_a1 = basisstate(b1,2)  ###(dim, basis_state)
+        ket_a2 = basisstate(b2,2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
         
     elseif rand_float1 < round(ancilla2_population[end];digits=1)
@@ -159,8 +160,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(dims[4],1)  ###(dim, basis_state)
-        ket_a2 = basisstate(dims[5],2)
+        ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
+        ket_a2 = basisstate(b2,2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     elseif rand_float1 < round(ancilla1_population[end];digits=1)
@@ -173,8 +174,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(dims[4],2)  ###(dim, basis_state)
-        ket_a2 = basisstate(dims[5],1)
+        ket_a1 = basisstate(b1,2)  ###(dim, basis_state)
+        ket_a2 = basisstate(b2,1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     else 
@@ -186,8 +187,8 @@ function main(N_trajectories::Int)
         ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
 
-        ket_a1 = basisstate(dims[4],1)  ###(dim, basis_state)
-        ket_a2 = basisstate(dims[5],1)
+        ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
+        ket_a2 = basisstate(b2,1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
     end
     ################################################################################################### Error Correction
