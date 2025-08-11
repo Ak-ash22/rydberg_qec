@@ -81,7 +81,7 @@ function params()
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (2 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
         :T5 => 25π,                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
-        :T_storage => 2*268
+        :T_storage => 1*268
     )
 end
 

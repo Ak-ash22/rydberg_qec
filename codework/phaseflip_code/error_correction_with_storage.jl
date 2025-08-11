@@ -2,13 +2,13 @@ include("functions.jl")
 
 # Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
-# script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
-# data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
+script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
+data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
 
-# if !isdir(data_folder)
-#     println("Directory does not exist. Creating directory...: $data_folder")
-#     mkpath(data_folder)
-# end
+if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -298,7 +298,7 @@ function main(N_trajectories::Int)
     #     @save file_path population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time
     # end
     # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
-    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction
 
     println("Data saved.")
 end
