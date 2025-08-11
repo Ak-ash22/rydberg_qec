@@ -130,6 +130,7 @@ function main(N_trajectories::Int)
 
     dims = Int[length(b) for b in ψt[end].basis.bases]
     ψt_end = reshape(ψt[end].data, dims...)
+    basis_ABC = CompositeBasis([NLevelBasis(3) for _ in 1:3]...)
 
     rand_float1 = round(rand();digits=1)
     rand_float2 = round(rand();digits=1)
@@ -141,8 +142,12 @@ function main(N_trajectories::Int)
         detected_error = true
 
         ψ_abc = @view ψt_end[:,:,:,2,2]
-        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
+
+        ket_a1 = basisstate(3,2)  ###(dim, basis_state)
+        ket_a2 = basisstate(3,2)
+        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
         
     elseif rand_float1 < round(ancilla2_population[end];digits=1)
         println("Ancilla 2 error detected.")
@@ -151,8 +156,12 @@ function main(N_trajectories::Int)
         detected_error = true
 
         ψ_abc = @view ψt_end[:,:,:,1,2]
-        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
+
+        ket_a1 = basisstate(3,1)  ###(dim, basis_state)
+        ket_a2 = basisstate(3,2)
+        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     elseif rand_float1 < round(ancilla1_population[end];digits=1)
         println("Ancilla 1 error detected.")
@@ -161,8 +170,12 @@ function main(N_trajectories::Int)
         detected_error = true
 
         ψ_abc = @view ψt_end[:,:,:,2,1]
-        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
+
+        ket_a1 = basisstate(3,2)  ###(dim, basis_state)
+        ket_a2 = basisstate(3,1)
+        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
     else 
         println("No errors detected.")
@@ -170,13 +183,17 @@ function main(N_trajectories::Int)
         ancilla2 = 0.0
 
         ψ_abc = @view ψt_end[:,:,:,1,1]
-        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
         ψ_abc = ψ_abc / norm(ψ_abc)
+
+        ket_a1 = basisstate(3,1)  ###(dim, basis_state)
+        ket_a2 = basisstate(3,1)
+        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
     end
     ################################################################################################### Error Correction
 
 
-    ψ1 = ψ_abc
+    ψ1 = ψ_full
 
     #Correcting Atom B
     if ancilla1 == 1.0 && ancilla2 == 1.0
