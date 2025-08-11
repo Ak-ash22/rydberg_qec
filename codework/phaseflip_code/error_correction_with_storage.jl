@@ -295,10 +295,10 @@ function main(N_trajectories::Int)
 
     if ancilla1 == 0.0 && ancilla2 == 0.0
         ψ_target = α .* reduce(kron,[plus,plus,plus]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus]) 
-        ρ_target = projector(Ket(full_basis,ψ_target))
+        ρ_target = projector(Ket(basis_ABC,ψ_target))
     else
         ψ_target = α .* reduce(kron,[plus,plus,plus]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus])
-        ρ_target = projector(Ket(full_basis,ψ_target))
+        ρ_target = projector(Ket(basis_ABC,ψ_target))
     end
 
     fidelity_after_correction = real(tr(sqrt(sqrt(ρ_final.data)*ρ_target.data*sqrt(ρ_final.data)))^2)
