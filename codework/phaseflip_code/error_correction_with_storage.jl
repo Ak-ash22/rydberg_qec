@@ -150,6 +150,11 @@ function main(N_trajectories::Int)
         ket_a2 = basisstate(b2,2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
         
+        ψ_proj_target = α .* reduce(kron,[b,a,b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,b,a,b,b])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
+
     elseif rand_float1 < round(ancilla2_population[end];digits=1)
         println("Ancilla 2 error detected.")
         ancilla1 = 0.0
@@ -163,6 +168,11 @@ function main(N_trajectories::Int)
         ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
         ket_a2 = basisstate(b2,2)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
+
+        ψ_proj_target = α .* reduce(kron,[b,b,a,a,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,b,a,b])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
     elseif rand_float1 < round(ancilla1_population[end];digits=1)
         println("Ancilla 1 error detected.")
@@ -178,6 +188,11 @@ function main(N_trajectories::Int)
         ket_a2 = basisstate(b2,1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
 
+        ψ_proj_target = α .* reduce(kron,[a,b,b,b,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[b,a,a,b,a])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
+
     else 
         println("No errors detected.")
         ancilla1 = 0.0
@@ -190,9 +205,13 @@ function main(N_trajectories::Int)
         ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
         ket_a2 = basisstate(b2,1)
         ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
+
+        ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
     end
     ################################################################################################### Error Correction
-
 
     ψ1 = ψ_full
 
