@@ -131,8 +131,6 @@ function main(N_trajectories::Int)
     bA, bB, bC, b1, b2 = ψt[end].basis.bases
     dims = Int[length(b) for b in ψt[end].basis.bases]
     ψt_end = normalize(ψt[end])
-    # ψt_end = reshape(ψt[end].data, dims...)
-    basis_ABC = CompositeBasis(bA, bB, bC)
 
     rand_float1 = round(rand();digits=1)
     rand_float2 = round(rand();digits=1)
@@ -143,16 +141,14 @@ function main(N_trajectories::Int)
         ancilla2 = 1.0
         detected_error = true
 
-        ψ_abc = @view ψt_end[:,:,:,2,2]
-        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
-        ψ_abc = ψ_abc / norm(ψ_abc)
+        ancilla_proj_state1 = projector(basisstate(b1,2))
+        ancilla_proj_state2 = projector(basisstate(b2,2))
+        P00 = full_operator([ancilla_proj_state1,ancilla_proj_state2],5,[4,5])
+        ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end)
 
-        ket_a1 = basisstate(b1,2)  ###(dim, basis_state)
-        ket_a2 = basisstate(b2,2)
-        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
-        
         ψ_proj_target = α .* reduce(kron,[b,a,b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,b,a,b,b])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
@@ -162,16 +158,14 @@ function main(N_trajectories::Int)
         ancilla2 = 1.0
         detected_error = true
 
-        ψ_abc = @view ψt_end[:,:,:,1,2]
-        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
-        ψ_abc = ψ_abc / norm(ψ_abc)
-
-        ket_a1 = basisstate(b1,1)  ###(dim, basis_state)
-        ket_a2 = basisstate(b2,2)
-        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
+        ancilla_proj_state1 = projector(basisstate(b1,1))
+        ancilla_proj_state2 = projector(basisstate(b2,2))
+        P00 = full_operator([ancilla_proj_state1,ancilla_proj_state2],5,[4,5])
+        ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end)
 
         ψ_proj_target = α .* reduce(kron,[b,b,a,a,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,b,a,b])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
@@ -181,16 +175,14 @@ function main(N_trajectories::Int)
         ancilla2 = 0.0
         detected_error = true
 
-        ψ_abc = @view ψt_end[:,:,:,2,1]
-        ψ_abc = Ket(basis_ABC, vec(copy(ψ_abc)))
-        ψ_abc = ψ_abc / norm(ψ_abc)
-
-        ket_a1 = basisstate(b1,2)  ###(dim, basis_state)
-        ket_a2 = basisstate(b2,1)
-        ψ_full = tensor(ψ_abc,ket_a1,ket_a2)
+        ancilla_proj_state1 = projector(basisstate(b1,2))
+        ancilla_proj_state2 = projector(basisstate(b2,1))
+        P00 = full_operator([ancilla_proj_state1,ancilla_proj_state2],5,[4,5])
+        ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end)
 
         ψ_proj_target = α .* reduce(kron,[a,b,b,b,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[b,a,a,b,a])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
@@ -199,13 +191,12 @@ function main(N_trajectories::Int)
         ancilla1 = 0.0
         ancilla2 = 0.0
 
-        ancilla_proj = projector(tensor(basisstate(b1,1), basisstate(b2,1)))
-        print(ancilla_proj)
-        P00 = embed(full_basis, [4,5],ancilla_proj)
-        # println(P00)
+        ancilla_proj_state1 = projector(basisstate(b1,1))
+        ancilla_proj_state2 = projector(basisstate(b2,1))
+        P00 = full_operator([ancilla_proj_state1,ancilla_proj_state2],5,[4,5])
         ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end)
 
-        ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
+        ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
         ψ_proj_target /= norm(ψ_proj_target)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)

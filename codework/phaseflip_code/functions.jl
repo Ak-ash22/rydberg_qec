@@ -16,20 +16,25 @@ function full_operator(gate, qubits, sites)
     Returns:
     - operator: AbstractOperator (the full operator acting on the entire system)
     """
-    # Ensure the gate is an AbstractOperator
-    if !(gate isa AbstractOperator)
-        throw(ArgumentError("The gate must be an AbstractOperator"))
-    end
-
     # Create an identity operator for each qubit
     identity = transition(NLevelBasis(3), 1, 1) + transition(NLevelBasis(3), 2, 2) + transition(NLevelBasis(3), 3, 3)
     identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
     identity_ops = [identity for _ in 1:qubits]
     
     # Replace the identity operator at site `i` with the provided gate
-
-    for j in sites
-        identity_ops[j] = gate
+    if (gate isa AbstractOperator)
+        for j in sites
+            identity_ops[j] = gate
+        end
+    else
+        i = 0
+        for j in sites
+            i += 1
+            if !(gate[i] isa AbstractOperator)
+                throw(ArgumentError("The gate must be an AbstractOperator"))
+            end
+            identity_ops[j] = gate[i]
+        end
     end
     # Return the Kronecker product of all operators
     return tensor(reverse(identity_ops)...)
