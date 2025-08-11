@@ -2,13 +2,13 @@ include("functions.jl")
 
 # Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
-script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
-data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
+# script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
+# data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
 
-if !isdir(data_folder)
-    println("Directory does not exist. Creating directory...: $data_folder")
-    mkpath(data_folder)
-end
+# if !isdir(data_folder)
+#     println("Directory does not exist. Creating directory...: $data_folder")
+#     mkpath(data_folder)
+# end
 
 function main(N_trajectories::Int)
     """
@@ -128,34 +128,55 @@ function main(N_trajectories::Int)
     ####################################################################################################### Error Detection
     println("Error Detection Commencing...")
 
-    rand_float = round(rand();digits=1)
+    dims = Int[length(b) for b in ψt[end].basis.bases]
+    ψt_end = reshape(ψt[end].data, dims...)
 
-    if rand_float < round(ancilla1_population[end];digits=1) && rand_float < round(ancilla2_population[end];digits=1)
+    rand_float1 = round(rand();digits=1)
+    rand_float2 = round(rand();digits=1)
+
+    if rand_float1 < round(ancilla1_population[end];digits=1) && rand_float2 < round(ancilla2_population[end];digits=1)#################
         println("Both Ancilla errors detected.")
         ancilla1 = 1.0
         ancilla2 = 1.0
         detected_error = true
+
+        ψ_abc = @view ψt_end[:,:,:,2,2]
+        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = ψ_abc / norm(ψ_abc)
         
-    elseif rand_float < round(ancilla2_population[end];digits=1)
+    elseif rand_float1 < round(ancilla2_population[end];digits=1)
         println("Ancilla 2 error detected.")
         ancilla1 = 0.0
         ancilla2 = 1.0
         detected_error = true
 
-    elseif rand_float < round(ancilla1_population[end];digits=1)
+        ψ_abc = @view ψt_end[:,:,:,1,2]
+        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = ψ_abc / norm(ψ_abc)
+
+    elseif rand_float1 < round(ancilla1_population[end];digits=1)
         println("Ancilla 1 error detected.")
         ancilla1 = 1.0
         ancilla2 = 0.0
         detected_error = true
 
+        ψ_abc = @view ψt_end[:,:,:,2,1]
+        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = ψ_abc / norm(ψ_abc)
+
     else 
         println("No errors detected.")
         ancilla1 = 0.0
         ancilla2 = 0.0
+
+        ψ_abc = @view ψt_end[:,:,:,1,1]
+        ψ_abc = Ket(full_basis, vec(copy(ψ_abc)))
+        ψ_abc = ψ_abc / norm(ψ_abc)
     end
     ################################################################################################### Error Correction
 
-    ψ1 = ψt[end]/norm(ψt[end])
+
+    ψ1 = ψ_abc
 
     #Correcting Atom B
     if ancilla1 == 1.0 && ancilla2 == 1.0
@@ -277,7 +298,7 @@ function main(N_trajectories::Int)
     #     @save file_path population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time
     # end
     # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_phase=$(ϕ)_Ntraj=$(N_trajectories).jld2" population_data corrected_population_data final_step_population_data S1_data S2_data fidelity_after_encoding fidelity_after_correction end_time 
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction
+    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction
 
     println("Data saved.")
 end
