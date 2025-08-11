@@ -129,6 +129,7 @@ function main(N_trajectories::Int)
     println("Error Detection Commencing...")
 
     bA, bB, bC, b1, b2 = ψt[end].basis.bases
+    basis_ABC = CompositeBasis(bA,bB,bC)
     dims = Int[length(b) for b in ψt[end].basis.bases]
     ψt_end = normalize(ψt[end])
 
