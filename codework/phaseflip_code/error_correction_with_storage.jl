@@ -296,21 +296,21 @@ function main(N_trajectories::Int)
     ρ_final = ptrace(ψt_end, [4,5])
 
 
-    # if ancilla1 == 0.0 && ancilla2 == 0.0
-    #     ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-    #     ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])  
-    # else
-    #     ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-    #     ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])
-    # end
-
     if ancilla1 == 0.0 && ancilla2 == 0.0
-        ψ_target = α .* reduce(kron,[plus,plus,plus]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus]) 
-        ρ_target = projector(Ket(basis_ABC,ψ_target))
+        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
+        ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])  
     else
-        ψ_target = α .* reduce(kron,[plus,plus,plus]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus])
-        ρ_target = projector(Ket(basis_ABC,ψ_target))
+        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
+        ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])
     end
+
+    # if ancilla1 == 0.0 && ancilla2 == 0.0
+    #     ψ_target = α .* reduce(kron,[plus,plus,plus]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus]) 
+    #     ρ_target = projector(Ket(basis_ABC,ψ_target))
+    # else
+    #     ψ_target = α .* reduce(kron,[plus,plus,plus]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus])
+    #     ρ_target = projector(Ket(basis_ABC,ψ_target))
+    # end
 
     fidelity_after_correction = real(tr(sqrt(sqrt(ρ_final.data)*ρ_target.data*sqrt(ρ_final.data)))^2)
     println("Fidelity after correction is $(fidelity_after_correction)")
