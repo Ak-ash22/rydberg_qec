@@ -67,7 +67,7 @@ function params()
         :Ω1 => 1.0,                         # Rabi frequency 1
         :Ω2 => 1.0,                         # Rabi frequency 2          
         :γ_Decay => 0.0,                    # Decay rate on the qubits
-        :γ_dephase => 0.0,                 # Dephasing rate on the qubits
+        :γ_dephase => 1.0e-5,                 # Dephasing rate on the qubits
         :V_nn => -1000.0,                   # rydberg interaction on the qubits
         :Δ_0 => 1000.0,                     # Detuning at t=0 for qubits + ancilla + Correcting A & B
         :Δb_0 => 2000.0,                    # Detuning at t=0 for Correcting Atom B
