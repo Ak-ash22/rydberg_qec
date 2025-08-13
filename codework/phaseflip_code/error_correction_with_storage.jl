@@ -27,7 +27,7 @@ function main(N_trajectories::Int)
     full_basis = CompositeBasis([NLevelBasis(3) for _ in 1:total_qubits]...)
     ψ0_ket = Ket(full_basis, ComplexF32.(ψ0)) 
 
-    
+    detected_error = false
     println("Starting the simulation...")
  
     ################################################################################################################ Protocol Starts
@@ -234,7 +234,7 @@ function main(N_trajectories::Int)
 
     println("Simulation complete in $(end_time). Saving data...")
 
-    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
 
     println("Data saved.")
 end

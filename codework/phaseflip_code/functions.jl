@@ -181,7 +181,7 @@ function lindbaldian_dephase(γ_dephase::Float64,total_qubits::Int64,site::Array
     
     for i in 1:total_qubits
         if i in site
-            C[i] = sqrt(γ_dephase) .* full_operator(σ_z, total_qubits, [i])
+            C[i] = sqrt(γ_dephase) * full_operator(σ_z, total_qubits, [i])
         else
             C[i] = full_operator(identity, total_qubits, [i])
         end
@@ -707,7 +707,9 @@ function f_storage(t,ψ)
 
 ########################################################################################################## Metrics required for Plots visualization
 n0 = transition(NLevelBasis(3),1,1)
+n0 = Operator(n0.basis_l, n0.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n0.data))
 n1 = transition(NLevelBasis(3),2,2)
+n1 = Operator(n1.basis_l, n1.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n1.data))
 
 const n0_atom1 = full_operator(n0,total_qubits,[1])
 const n0_atom2 = full_operator(n0,total_qubits,[2])
@@ -721,7 +723,7 @@ const n1_atom3 = full_operator(n1,total_qubits,[3])
 const n1_ancilla1 = full_operator(n1,total_qubits,[4])
 const n1_ancilla2 = full_operator(n1,total_qubits,[5])
 
-#Stabilizer Generators
-σx = transition(NLevelBasis(3),1,2) + transition(NLevelBasis(3),2,1)
-const S1 = full_operator(σx,total_qubits,[1,2])
-const S2 = full_operator(σx,total_qubits,[2,3])
+# #Stabilizer Generators
+# σx = transition(NLevelBasis(3),1,2) + transition(NLevelBasis(3),2,1)
+# const S1 = full_operator(σx,total_qubits,[1,2])
+# const S2 = full_operator(σx,total_qubits,[2,3])
