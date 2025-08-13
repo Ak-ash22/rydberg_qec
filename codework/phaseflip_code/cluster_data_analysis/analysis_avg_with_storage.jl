@@ -15,7 +15,7 @@ function average_populations()
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
 
-    @load first_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction
+    @load first_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
 
     # --- Initialize accumulators for all population types ---
     avg_fidelity_after_encoding = fidelity_after_encoding
@@ -29,7 +29,7 @@ function average_populations()
     for i in 2:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
-        @load file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction   #fidelity_data # Load the dictionary
+        @load file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
         
         avg_fidelity_after_encoding += fidelity_after_encoding
         avg_fidelity_after_storage += fidelity_after_storage
@@ -48,6 +48,49 @@ function average_populations()
     println("Averaged populations saved to $final_file_path")
 end
 
+
+function save_jump_files()
+    dephase = 1.0e-5
+    ϕ = 0.915
+
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/"
+    file_pattern = "N_atoms=5_γ_dephase=$(dephase)_case1_Ntraj="
+
+    num_files = 1000  # Number of files to process
+
+    jump_folder = base_path * "jump_files/"
+
+    if !isdir(jump_folder)
+        println("Directory does not exist. Creating directory...: $jump_folder")
+        mkpath(jump_folder)
+    end
+
+    for i in 1:num_files
+        file_path = base_path * file_pattern * string(i) * ".jld2"
+        try
+            # Load the file
+            @load first_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+            
+            if detected_error
+                # Save the jumps data to a new file
+                jump_file_path = jump_folder * "jumps_detected_" * string(i) * ".jld2"
+                @save fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+            end
+            println("Saved jumps data Trajectories")
+
+        catch e
+            @warn "Skipping missing or corrupted file in function 2: $file_path ($e)"
+        end
+    end
+
+end
+
+
+
+
+
+
+
 # --- Run the function ---
 # --- Parse command-line arguments ---
 if abspath(PROGRAM_FILE) == @__FILE__
@@ -57,5 +100,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     end
     id = parse(Int, ARGS[1])
     average_populations()
+    save_jump_files()
 end
 #######Run slurm batch over 200 jobs#############
