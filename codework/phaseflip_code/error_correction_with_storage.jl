@@ -105,7 +105,7 @@ function main(N_trajectories::Int)
         ancilla2_2 = Operator(ancilla2_2.basis_l, ancilla2_2.basis_r, SparseMatrixCSC{ComplexF32, Int64}(ancilla2_2.data))
 
         P11 = full_operator([ancilla1_2, ancilla2_2], 5, [4, 5])
-        ψ_full = (P11 * ψ_target) / norm(P11 * ψ_target);
+        ψ_full = (P11 * ψt_end) / norm(P11 * ψt_end);
 
         ψ_proj_target = α .* reduce(kron,[b,a,b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,b,a,b,b])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
@@ -126,7 +126,7 @@ function main(N_trajectories::Int)
         ancilla2_2 = Operator(ancilla2_2.basis_l, ancilla2_2.basis_r, SparseMatrixCSC{ComplexF32, Int64}(ancilla2_2.data))
 
         P01 = full_operator([ancilla1_1, ancilla2_2], 5, [4, 5])
-        ψ_full = (P01 * ψ_target) / norm(P01 * ψ_target);
+        ψ_full = (P01 * ψt_end) / norm(P01 * ψt_end);
 
         ψ_proj_target = α .* reduce(kron,[b,b,a,a,b]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,b,a,b])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
@@ -147,7 +147,7 @@ function main(N_trajectories::Int)
         ancilla2_1 = Operator(ancilla2_1.basis_l, ancilla2_1.basis_r, SparseMatrixCSC{ComplexF32, Int64}(ancilla2_1.data))
 
         P10 = full_operator([ancilla1_2, ancilla2_1], 5, [4, 5])
-        ψ_full = (P10 * ψ_target) / norm(P10 * ψ_target);
+        ψ_full = (P10 * ψt_end) / norm(P10 * ψt_end);
 
     else 
         println("No errors detected.")
@@ -161,7 +161,7 @@ function main(N_trajectories::Int)
         ancilla2_1 = Operator(ancilla2_1.basis_l, ancilla2_1.basis_r, SparseMatrixCSC{ComplexF32, Int64}(ancilla2_1.data))
 
         P00 = full_operator([ancilla1_1, ancilla2_1], 5, [4, 5])
-        ψ_full = (P00 * ψ_target) / norm(P00 * ψ_target);
+        ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end);
 
         ψ_proj_target = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[a,a,a,a,a])
         ψ_proj_target = Ket(full_basis,ψ_proj_target)
