@@ -1,6 +1,6 @@
 include("system_params.jl")
 include("dependencies.jl")
-const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T2, T3, T4, T5, T_storage = unpack_params()
+const Ω1, Ω2, γ_Decay, γ_dephase, V_nn, Δ_0, Δb_0, T1, T2, T3, T4, T5 = unpack_params()
 
 ##Helper Functions 
 function full_operator(gate, qubits, sites)
@@ -516,7 +516,6 @@ function f5(t,ψ)
     end
     
 # ###############################################################################################Timespan for storage between encoding and syndrome measurement - Step 6 
-const tspan6 = [0.0: 0.1: T_storage;]
 
 const H_storage = LazySum([0.0],[full_operator(custom_identity,total_qubits,[1,2,3,4,5])]) 
 

@@ -75,8 +75,8 @@ function params()
         :T2 => 25π,                         # Evolution time for step 2 -- Applying hadamards on Atom A, B and C
         :T3 => (2 + sqrt(2))π,              # Evolution time for step 3 -- Evolving the ancillas 1 and 2
         :T4 => (2 + sqrt(2))π,              # Evolution time for step 4 -- Correcting Atoms
-        :T5 => 25π,                         # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
-        :T_storage => 1*268
+        :T5 => 25π                          # Evolution time for step 5 -- Applying hadamards on Atom A, B and C
+        # :T_storage => 1*268
     )
 end
 
@@ -85,5 +85,5 @@ function unpack_params()  #Need to define these as const in main.jl
     Unpack the system parameters
     "
     p = params()
-    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5], p[:T_storage]
+    return p[:Ω1], p[:Ω2], p[:γ_Decay], p[:γ_dephase], p[:V_nn], p[:Δ_0], p[:Δb_0], p[:T1], p[:T2], p[:T3], p[:T4], p[:T5]
 end

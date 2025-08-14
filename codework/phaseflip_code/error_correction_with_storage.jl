@@ -3,19 +3,22 @@ include("functions.jl")
 # Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
-data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
 
-if !isdir(data_folder)
-   println("Directory does not exist. Creating directory...: $data_folder")
-   mkpath(data_folder)
-end
-
-function main(N_trajectories::Int)
+function main(N_trajectories::Int,s)
     """
     Main function to run the simulation
     """
 
+    data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/s$(s)/")
+
+    if !isdir(data_folder)
+    println("Directory does not exist. Creating directory...: $data_folder")
+    mkpath(data_folder)
+    end
+
     ϕ = 0.915
+    T_storage = s*268
+    const tspan6 = [0.0: 0.1: T_storage;]
 
     println("Running the simulation with trajectory number = $(N_trajectories) and phase = $(ϕ)")
     
@@ -253,5 +256,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     end
     id = parse(Int, ARGS[1])
     N_trajectories = (id % 1000) + 1
-    main(N_trajectories)
+    s = (id // 1000) + 1
+    main(N_trajectories,s)
 end
