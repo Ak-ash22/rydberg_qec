@@ -69,12 +69,12 @@ function save_jump_files()
         file_path = base_path * file_pattern * string(i) * ".jld2"
         try
             # Load the file
-            @load first_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+            @load file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
             
             if detected_error
                 # Save the jumps data to a new file
                 jump_file_path = jump_folder * "jumps_detected_" * string(i) * ".jld2"
-                @save fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+                @save jump_file_path fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
             end
             println("Saved jumps data Trajectories")
 
