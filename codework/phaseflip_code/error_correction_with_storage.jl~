@@ -73,14 +73,14 @@ function main(N_trajectories::Int)
 
     println("Fidelity after hadamard is $(fidelity)")
 
-    ψ_2 =Ket(full_basis, α .* reduce(kron,[b,a,b,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron, [a,b,a,a,a]))
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ_2,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
 
-    ψ_2_target = α .* reduce(kron,[b,a,b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron, [a,b,a,b,b])
-    fidelity = abs((dagger(Ket(full_basis,ψ_2_target)) * ψt[end]/norm(ψt[end]))^2)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
+    
+    ψ_target3 = α .* reduce(kron,[b,b,b,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron, [a,a,a,a,a])
+    fidelity = abs((dagger(Ket(full_basis,ψ_target3)) * ψt_end)^2)
 
     println("Fidelity after ancilla driving is $(fidelity)")
-   
+
     #Track Jumps Info
     has_error = length(jumps) > 0
     ancilla1_population = real(expect(n1_ancilla1, ψt))
@@ -227,17 +227,15 @@ function main(N_trajectories::Int)
     ψt_end = virtual_z_full * (ψt[end]/norm(ψt[end]))
     ψt_end /= norm(ψt_end)
 
-    ρ_final = ptrace(ψt_end, [1,2])
+    ρ_final = ptrace(ψt_end, [4,5])
 
 
     if ancilla1 == 0.0 && ancilla2 == 0.0
-	println("Found loop for ancilla1=0.0 and ancilla2=0.0")
-        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-        ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])  
+        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) + (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
+        ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])  
     else
-	println("Found ancilla1=$(ancilla1) and ancilla2=$ancilla2)")
         ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-        ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])
+        ρ_target = ptrace(Ket(full_basis,ψ_target), [4,5])
     end
 
 
@@ -251,7 +249,7 @@ function main(N_trajectories::Int)
 
     println("Simulation complete in $(end_time). Saving data...")
 
-#    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+   # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
 
     println("Data saved.")
 end
