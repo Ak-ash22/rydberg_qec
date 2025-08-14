@@ -2,13 +2,13 @@ include("functions.jl")
 
 # Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
-#script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
-#data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
+script_dir = "/scratch/roq68sum/5atoms_code/phaseflip_code/"
+data_folder = joinpath(script_dir, "dephase_$(γ_dephase)/")
 
-#if !isdir(data_folder)
-#    println("Directory does not exist. Creating directory...: $data_folder")
-#    mkpath(data_folder)
-#end
+if !isdir(data_folder)
+   println("Directory does not exist. Creating directory...: $data_folder")
+   mkpath(data_folder)
+end
 
 function main(N_trajectories::Int)
     """
@@ -73,13 +73,7 @@ function main(N_trajectories::Int)
 
     println("Fidelity after hadamard is $(fidelity)")
 
-    ψ_2 =Ket(full_basis, α .* reduce(kron,[b,a,b,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron, [a,b,a,a,a]))
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψ_2,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
-
-    ψ_2_target = α .* reduce(kron,[b,a,b,b,b]) + (exp(1im * ϕ) * β) .* reduce(kron, [a,b,a,b,b])
-    fidelity = abs((dagger(Ket(full_basis,ψ_2_target)) * ψt[end]/norm(ψt[end]))^2)
-
-    println("Fidelity after ancilla driving is $(fidelity)")
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan3,ψt_end,f3,maxiters=1e9,seed=(N_trajectories*10000 + i),display_jumps=true)
    
     #Track Jumps Info
     has_error = length(jumps) > 0
@@ -229,16 +223,9 @@ function main(N_trajectories::Int)
 
     ρ_final = ptrace(ψt_end, [1,2])
 
-
-    if ancilla1 == 0.0 && ancilla2 == 0.0
-	println("Found loop for ancilla1=0.0 and ancilla2=0.0")
-        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-        ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])  
-    else
-	println("Found ancilla1=$(ancilla1) and ancilla2=$ancilla2)")
-        ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
-        ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])
-    end
+    ψ_target = α .* reduce(kron,[plus,plus,plus,a,a]) - (exp(1im * ϕ) * β) .* reduce(kron,[minus,minus,minus,a,a])
+    ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])
+ 
 
 
     fidelity_after_correction = real(tr(sqrt(sqrt(ρ_final.data)*ρ_target.data*sqrt(ρ_final.data)))^2)
@@ -251,7 +238,7 @@ function main(N_trajectories::Int)
 
     println("Simulation complete in $(end_time). Saving data...")
 
-#    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
+   @save "$(data_folder)/N_atoms=$(total_qubits)_γ_dephase=$(γ_dephase)_case1_Ntraj=$(N_trajectories).jld2" fidelity_after_encoding fidelity_after_storage fidelity_after_correction detected_error
 
     println("Data saved.")
 end
