@@ -18,7 +18,7 @@ function main(N_trajectories::Int,s)
 
     ϕ = 0.915
     T_storage = s*268
-    const tspan6 = [0.0: 0.1: T_storage;]
+    tspan6 = [0.0: 0.1: T_storage;]
 
     println("Running the simulation with trajectory number = $(N_trajectories) and phase = $(ϕ)")
     
@@ -256,6 +256,6 @@ if abspath(PROGRAM_FILE) == @__FILE__
     end
     id = parse(Int, ARGS[1])
     N_trajectories = (id % 1000) + 1
-    s = (id // 1000) + 1
+    s = fld(id,1000) + 1
     main(N_trajectories,s)
 end

@@ -1,13 +1,13 @@
 using JLD2, FileIO
 
-function average_populations()
+function average_populations(s)
     # --- Path to data ---
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
     # base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_1.0e-5/"
     dephase = 1.0e-5
     ϕ = 0.915
 
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/"
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/s$(s)/"
     file_pattern = "N_atoms=5_γ_dephase=$(dephase)_case1_Ntraj="
 
     num_files = 1000  # Number of files to process
@@ -42,18 +42,18 @@ function average_populations()
     avg_fidelity_after_correction *= 1 / num_files
 
     # --- Save Averaged Data ---
-    final_file_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/N_atoms=5_γ_dephase=$(dephase)_case1_phase=$(ϕ)_Ntraj=$(num_files)_avg.jld2"
+    final_file_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/N_atoms=5_γ_dephase=$(dephase)_case1_phase=$(ϕ)_Ntraj=$(num_files)_avg_s$(s).jld2"
     @save final_file_path avg_fidelity_after_encoding avg_fidelity_after_storage avg_fidelity_after_correction
 
     println("Averaged populations saved to $final_file_path")
 end
 
 
-function save_jump_files()
+function save_jump_files(s)
     dephase = 1.0e-5
     ϕ = 0.915
 
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/"
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/s$(s)"
     file_pattern = "N_atoms=5_γ_dephase=$(dephase)_case1_Ntraj="
 
     num_files = 1000  # Number of files to process
@@ -99,7 +99,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         exit(1)
     end
     id = parse(Int, ARGS[1])
-    average_populations()
-    save_jump_files()
+    average_populations(id)
+    save_jump_files(id)
 end
 #######Run slurm batch over 200 jobs#############
