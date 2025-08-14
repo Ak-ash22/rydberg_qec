@@ -53,7 +53,7 @@ function save_jump_files(s)
     dephase = 1.0e-5
     ϕ = 0.915
 
-    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/s$(s)"
+    base_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/s$(s)/"
     file_pattern = "N_atoms=5_γ_dephase=$(dephase)_case1_Ntraj="
 
     num_files = 1000  # Number of files to process
