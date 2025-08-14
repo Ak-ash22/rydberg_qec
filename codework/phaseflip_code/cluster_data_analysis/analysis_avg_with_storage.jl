@@ -26,6 +26,10 @@ function average_populations(s)
     println("Processing $num_files files...")
 
     # --- Parallelized Loop for File Processing ---
+    fid_after_enc = []
+    fid_after_store = []
+    fid_after_correct = []
+
     for i in 2:num_files
         file_path = base_path * file_pattern * string(i) * ".jld2"
 
@@ -34,6 +38,10 @@ function average_populations(s)
         avg_fidelity_after_encoding += fidelity_after_encoding
         avg_fidelity_after_storage += fidelity_after_storage
         avg_fidelity_after_correction += fidelity_after_correction
+
+        push!(fid_after_enc, fidelity_after_encoding)
+        push!(fid_after_store, fidelity_after_storage)
+        push!(fid_after_correct, fidelity_after_correction)
     end
 
     # --- Compute Averages ---
@@ -43,7 +51,7 @@ function average_populations(s)
 
     # --- Save Averaged Data ---
     final_file_path = "/scratch/roq68sum/5atoms_code/phaseflip_code/dephase_$(dephase)/N_atoms=5_γ_dephase=$(dephase)_case1_phase=$(ϕ)_Ntraj=$(num_files)_avg_s$(s).jld2"
-    @save final_file_path avg_fidelity_after_encoding avg_fidelity_after_storage avg_fidelity_after_correction
+    @save final_file_path avg_fidelity_after_encoding avg_fidelity_after_storage avg_fidelity_after_correction fid_after_enc fid_after_store fid_after_correct
 
     println("Averaged populations saved to $final_file_path")
 end
