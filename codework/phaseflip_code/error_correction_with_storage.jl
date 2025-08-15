@@ -91,10 +91,11 @@ function main(N_trajectories::Int,s)
     bA, bB, bC, b1, b2 = ψt[end].basis.bases
     ψt_end = normalize(ψt[end])
 
-    rand_float1 = round(rand();digits=1)
-    rand_float2 = round(rand();digits=1)
+    rng = MersenneTwister(N_trajectories*10000 + i)
+    rand_float1 = rand(rng,1)[1]
+    rand_float2 = rand(rng,1)[1]
 
-    if rand_float1 < round(ancilla1_population[end];digits=1) && rand_float2 < round(ancilla2_population[end];digits=1)
+    if rand_float1 < ancilla1_population[end] && rand_float2 < ancilla2_population[end]
         println("Both Ancilla errors detected.")
         ancilla1 = 1.0
         ancilla2 = 1.0
@@ -115,7 +116,7 @@ function main(N_trajectories::Int,s)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
-    elseif rand_float1 < round(ancilla2_population[end];digits=1)
+    elseif rand_float1 < ancilla2_population[end]
         println("Ancilla 2 error detected.")
         ancilla1 = 0.0
         ancilla2 = 1.0
@@ -136,7 +137,7 @@ function main(N_trajectories::Int,s)
         fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
         print("Error Detection and Projection done with fidelity $(fidelity_after_projection)")
 
-    elseif rand_float1 < round(ancilla1_population[end];digits=1)
+    elseif rand_float1 < ancilla1_population[end]
         println("Ancilla 1 error detected.")
         ancilla1 = 1.0
         ancilla2 = 0.0
