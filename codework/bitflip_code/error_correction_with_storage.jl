@@ -47,7 +47,7 @@ function main(N_trajectories::Int,s)
   
     println("Starting the simulation. Encoding commencing...")
     
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan1,ψ0_ket,f1,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
 
     #Track Jumps Info
     has_error = length(jumps) > 0
@@ -84,7 +84,7 @@ function main(N_trajectories::Int,s)
     ψt_end = ψt[end]/norm(ψt[end])
     println("Storage done. Driving Ancillas...")
 
-    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
+    @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
 
     #Track Jumps Info
     has_error = length(jumps) > 0

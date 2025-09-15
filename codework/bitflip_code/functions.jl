@@ -193,12 +193,12 @@ function f1(t,ψ)
         C:: Array{Operator}: Array of decay operators acting on the system
         Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
     """
-    
-        H = Ht1(t)
-    
-        return H, C, Cdagger
-    end
-    
+
+    H = Ht1(t)
+
+    return H, C, Cdagger
+end
+
 
 ######################################################################################################## Encoding Atoms - Step 1
 
@@ -245,10 +245,10 @@ function f2(t,ψ)
         Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
     """
     
-        H = Ht2(t)
-    
-        return H, C, Cdagger
-    end
+    H = Ht2(t)
+
+    return H, C, Cdagger
+end
 
 
 
@@ -481,7 +481,7 @@ function f_storage(t,ψ)
         Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
     """
     
-        H = Ht_storage(t)
-        return H, C, Cdagger
-    end
+    H = Ht_storage(t)
+    return H, C, Cdagger
+end
   
