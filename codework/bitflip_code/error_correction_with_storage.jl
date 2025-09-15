@@ -9,12 +9,12 @@ function main(N_trajectories::Int,s)
     """
     Main function to run the simulation
     """
-    data_folder = joinpath(script_dir, "decay_$(γ_decay)/s$(s)")
+    # data_folder = joinpath(script_dir, "decay_$(γ_decay)/s$(s)")
 
-    if !isdir(data_folder)
-        println("Directory does not exist. Creating directory...: $data_folder")
-        mkpath(data_folder)
-    end
+    # if !isdir(data_folder)
+    #     println("Directory does not exist. Creating directory...: $data_folder")
+    #     mkpath(data_folder)
+    # end
 
     T_storage = s*268
     tspan_s = [0.0: 0.1: T_storage]
