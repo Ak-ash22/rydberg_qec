@@ -38,7 +38,6 @@ function full_operator(gate, qubits, sites)
     end
     # Return the Kronecker product of all operators
     return tensor(reverse(identity_ops)...)
-
 end
 
 
@@ -125,7 +124,7 @@ function lindbaldian_decay(γ_Decay::Float64,site::Array)
     
     for i in 1:total_qubits
         if i in site
-            C[i] = sqrt(γ_Decay) .* full_operator(σ_minus, total_qubits, [i])
+            C[i] = sqrt(γ_Decay) * full_operator(σ_minus, total_qubits, [i])
         else
             C[i] = full_operator(identity, total_qubits, [i])
         end
@@ -355,8 +354,8 @@ end
 ######################################################################################################## Error Correction - Step 3
 
 ## Error Correction
-const tspan2 = [0.0:0.1:T3;]  #Time span for error correction of atom A or C
-const tspan3 = [0.0:0.1:T4;]  #Time span for error correction of atom B
+const tspan3 = [0.0:0.1:T3;]  #Time span for error correction of atom A or C
+const tspan4 = [0.0:0.1:T4;]  #Time span for error correction of atom B
 
 #Required Matrix Constants
 n_abc = full_operator(n, total_qubits, [1,2,3])
@@ -364,14 +363,14 @@ n_abc = Operator(n_abc.basis_l, n_abc.basis_r, SparseMatrixCSC{ComplexF32, Int64
 
 #Hamiltonian for Error Correction of Atom A
 const coeff3 = [t->get_qubit_parameters(p,t,:T3)]
-const H_correct_a = LazySum([coeff3[1](tspan2[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
+const H_correct_a = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:4],[σx_a, n_a, nn_ab, nn_a1])
 
 #Hamiltonian for Error Correction of Atom B
 const coeff4 = [t->get_qubit_parameters(p,t,:T4)]
-const H_correct_b = LazySum([coeff4[1](tspan3[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
+const H_correct_b = LazySum([coeff4[1](tspan4[1])[i] for i ∈ 1:6],[σx_b, n_b, nn_ab, nn_bc, nn_b1, nn_b2])
 
 #Hamiltonian for Error Correction of Atom C
-const H_correct_c = LazySum([coeff3[1](tspan2[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
+const H_correct_c = LazySum([coeff3[1](tspan3[1])[i] for i ∈ 1:4],[σx_c, n_c, nn_bc, nn_c2])
 
 #Hamiltonian for No Correction -- Zero Hamiltonian
 const H_no_correct = LazySum([0.0],[σx_a])
@@ -434,7 +433,7 @@ Returns:
 """
 
     H = Ht_correct(t,site)
-    return H, Ct(t)...
+    return H, C, Cdagger
 end
 
 function f_correct_factory(site)
@@ -453,7 +452,7 @@ end
 # ###############################################################################################Timespan for storage between encoding and syndrome measurement 
 custom_identity = transition(basis,1,1) + transition(basis,2,2)
 custom_identity = Operator(custom_identity.basis_l, custom_identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(custom_identity.data))
-const H_storage = LazySum([0.0],[full_operator(custom_identity,total_qubits,[1,2,3,4,5])]) 
+const H_storage = LazySum([0.0],[σx_a]) 
 
 function Ht_storage(t)
     """
