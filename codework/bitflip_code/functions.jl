@@ -3,36 +3,42 @@ include("dependencies.jl")
 const Ω, γ_Decay, γ_dephase, V_nn, δ, Δ1_0, Δ2_0, Δac_0, Δb_0, T1, T2, T3, T4 = unpack_params()
 
 ##Helper Functions 
-function full_operator(gate, total_qubits, sites)
+function full_operator(gate, qubits, sites)
     """
-    Applies an arbitrary gate on a specified site `i` in a `total_qubits`-qubit system.
+    Applies an arbitrary gate on a specified site `i` in a `qubits`-qubit system.
     All other sites are identity operators.
 
     Args:
     - gate: AbstractOperator (arbitrary gate to apply on site `i`)
     - i: Array (site index to apply the gate, 1-based)
-    - total_qubits: Int (total number of qubits)
+    - qubits: Int (total number of qubits)
 
     Returns:
     - operator: AbstractOperator (the full operator acting on the entire system)
     """
-    # Ensure the gate is an AbstractOperator
-    if !(gate isa AbstractOperator)
-        throw(ArgumentError("The gate must be an AbstractOperator"))
-    end
-
     # Create an identity operator for each qubit
-    identity = transition(NLevelBasis(2), 1,1) + transition(NLevelBasis(2), 2,2)
+    identity = transition(NLevelBasis(2), 1, 1) + transition(NLevelBasis(2), 2, 2)
     identity = Operator(identity.basis_l, identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(identity.data))
-    identity_ops = [identity for _ in 1:total_qubits]
+    identity_ops = [identity for _ in 1:qubits]
     
     # Replace the identity operator at site `i` with the provided gate
-    for j in sites
-        identity_ops[j] = gate
+    if (gate isa AbstractOperator)
+        for j in sites
+            identity_ops[j] = gate
+        end
+    else
+        i = 0
+        for j in sites
+            i += 1
+            if !(gate[i] isa AbstractOperator)
+                throw(ArgumentError("The gate must be an AbstractOperator"))
+            end
+            identity_ops[j] = gate[i]
+        end
     end
-
     # Return the Kronecker product of all operators
     return tensor(reverse(identity_ops)...)
+
 end
 
 
@@ -138,8 +144,8 @@ n = Operator(n.basis_l, n.basis_r, SparseMatrixCSC{ComplexF32, Int64}(n.data))
 # Parameters for the Atoms -- coefficients for the Hamiltonian
 p = qubit_parameters(Ω,γ_Decay,γ_dephase,V_nn,δ)
 
-#Timespan for driving atoms A-B-C and 1-2-3
-const tspan = [0.0:0.1:(T1+T2);]
+######################################################################################################## Encoding Atoms - Step 1
+const tspan1 = [0.0: 0.1: T1;]
 
 # System Hamiltonian 1 - driving atoms A-B-C
 σx_a = full_operator(σx, total_qubits, [1])
@@ -151,7 +157,52 @@ const n_c = full_operator(n, total_qubits, [3])
 nn_ab = full_operator(n, total_qubits, [1,2])
 nn_bc = full_operator(n, total_qubits, [2,3])
 const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
-const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+const H1 = LazySum([coeff1[1](tspan1[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
+
+
+function Ht1(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method till time steps T1+T2.
+        -- H1: Hamiltonian for driving atoms A-B-C for time 0:T1
+    Args:
+        t:: Float64: Time
+    
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
+    coeffs = coeff1[1](t)
+    for i in eachindex(coeffs)
+        H1.factors[i] = coeffs[i]
+    end
+    return H1
+end
+
+#Helper function for mcwf_dynamic
+const C = lindbaldian_decay(γ_Decay,[1,2,3,4,5])    
+const Cdagger = [adjoint(c) for c in C]
+
+function f1(t,ψ)
+    """
+    Function to calculate the time evolution of the system using the MCWF method.
+    
+    Args:
+        t:: Float64: Time
+    
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+    """
+    
+        H = Ht1(t)
+    
+        return H, C, Cdagger
+    end
+    
+
+######################################################################################################## Encoding Atoms - Step 1
+
+const tspan2 = [0.0: 0.1 : T2;]
 
 #System Hamiltonian 2 - driving atoms 1-2
 σx_1 = full_operator(σx, total_qubits, [4])
@@ -163,76 +214,145 @@ nn_b1 = full_operator(n, total_qubits, [2,4])
 nn_b2 = full_operator(n, total_qubits, [2,5])
 nn_c2 = full_operator(n, total_qubits, [3,5])
 const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
-const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
+const H2 = LazySum([coeff2[1](tspan2[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
 
 
-function Ht(t)
-"""
-Function to calculate the time dependent Hamiltonian for the MCWF method till time steps T1+T2.
-    -- H1: Hamiltonian for driving atoms A-B-C for time 0:T1
-    -- H2: Hamiltonian for driving atoms 1-2-3 for time T1:T1+T2
-
-Args:
-    t:: Float64: Time
-
-Returns:
-    H:: LazySum: Time dependent Hamiltonian
-"""
-
-    if t<T1 || t==T1
-        coeffs = coeff1[1](t)
-        for i in eachindex(coeffs)
-            H1.factors[i] = coeffs[i]
-        end
-        return H1
-
-    elseif t<(T1+T2) || t==(T1+T2)
-        coeffs = coeff2[1](t-T1)
-        for i in eachindex(coeffs)
-            H2.factors[i] = coeffs[i]
-        end
-        return H2
+function Ht2(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method till time steps T1+T2.
+        -- H1: Hamiltonian for driving atoms A-B-C for time 0:T1
+    Args:
+        t:: Float64: Time
+    
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
+    coeffs = coeff2[1](t)
+    for i in eachindex(coeffs)
+        H2.factors[i] = coeffs[i]
     end
+    return H2
 end
 
+function f2(t,ψ)
+    """
+    Function to calculate the time evolution of the system using the MCWF method.
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+    """
+    
+        H = Ht2(t)
+    
+        return H, C, Cdagger
+    end
 
-#Helper function for mcwf_dynamic
-const C = lindbaldian_decay(γ_Decay,[1,2,3,4,5])    
-const Cdagger = [adjoint(c) for c in C]
 
 
-function Ct(t)
-"""
-Function to calculate the time dependent Lindbaldian decay operators for the MCWF method till time steps T1+T2.
 
-Args:
-    t:: Float64: Time
+######################################################################################################## Encoding Atoms+Ancillas - Step 1+2
 
-Returns:
-    C:: Array{Operator}: Array of decay operators acting on the system
-    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-"""
+# #Timespan for driving atoms A-B-C and 1-2-3
+# const tspan = [0.0:0.1:(T1+T2);]
 
-    return C, Cdagger
-end
+# # System Hamiltonian 1 - driving atoms A-B-C
+# σx_a = full_operator(σx, total_qubits, [1])
+# σx_b = full_operator(σx, total_qubits, [2])
+# σx_c = full_operator(σx, total_qubits, [3])
+# const n_a = full_operator(n, total_qubits, [1])
+# const n_b = full_operator(n, total_qubits, [2])
+# const n_c = full_operator(n, total_qubits, [3])
+# nn_ab = full_operator(n, total_qubits, [1,2])
+# nn_bc = full_operator(n, total_qubits, [2,3])
+# const coeff1 = [t->get_qubit_parameters(p,t,:T1)]
+# const H1 = LazySum([coeff1[1](tspan[1])[i] for i ∈ 1:6],[σx_a, σx_c, n_a, n_c, nn_ab, nn_bc])
 
-function f(t,ψ)
-"""
-Function to calculate the time evolution of the system using the MCWF method.
+# #System Hamiltonian 2 - driving atoms 1-2
+# σx_1 = full_operator(σx, total_qubits, [4])
+# σx_2 = full_operator(σx, total_qubits, [5])
+# const n_1 = full_operator(n, total_qubits, [4])
+# const n_2 = full_operator(n, total_qubits, [5])
+# nn_a1 = full_operator(n, total_qubits, [1,4])
+# nn_b1 = full_operator(n, total_qubits, [2,4])
+# nn_b2 = full_operator(n, total_qubits, [2,5])
+# nn_c2 = full_operator(n, total_qubits, [3,5])
+# const coeff2 = [t->get_qubit_parameters(p,t,:T2)]
+# const H2 = LazySum([coeff2[1](tspan[1])[i] for i ∈ 1:8],[σx_1, σx_2, n_1, n_2, nn_a1, nn_b1, nn_b2, nn_c2])
 
-Args:
-    t:: Float64: Time
 
-Returns:
-    H:: LazySum: Time dependent Hamiltonian
-    C:: Array{Operator}: Array of decay operators acting on the system
-    Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
-"""
+# function Ht(t)
+# """
+# Function to calculate the time dependent Hamiltonian for the MCWF method till time steps T1+T2.
+#     -- H1: Hamiltonian for driving atoms A-B-C for time 0:T1
+#     -- H2: Hamiltonian for driving atoms 1-2-3 for time T1:T1+T2
 
-    H = Ht(t)
-    return H, Ct(t)...
-end
+# Args:
+#     t:: Float64: Time
 
+# Returns:
+#     H:: LazySum: Time dependent Hamiltonian
+# """
+
+#     if t<T1 || t==T1
+#         coeffs = coeff1[1](t)
+#         for i in eachindex(coeffs)
+#             H1.factors[i] = coeffs[i]
+#         end
+#         return H1
+
+#     elseif t<(T1+T2) || t==(T1+T2)
+#         coeffs = coeff2[1](t-T1)
+#         for i in eachindex(coeffs)
+#             H2.factors[i] = coeffs[i]
+#         end
+#         return H2
+#     end
+# end
+
+
+# #Helper function for mcwf_dynamic
+# const C = lindbaldian_decay(γ_Decay,[1,2,3,4,5])    
+# const Cdagger = [adjoint(c) for c in C]
+
+
+# function Ct(t)
+# """
+# Function to calculate the time dependent Lindbaldian decay operators for the MCWF method till time steps T1+T2.
+
+# Args:
+#     t:: Float64: Time
+
+# Returns:
+#     C:: Array{Operator}: Array of decay operators acting on the system
+#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+# """
+
+#     return C, Cdagger
+# end
+
+# function f(t,ψ)
+# """
+# Function to calculate the time evolution of the system using the MCWF method.
+
+# Args:
+#     t:: Float64: Time
+
+# Returns:
+#     H:: LazySum: Time dependent Hamiltonian
+#     C:: Array{Operator}: Array of decay operators acting on the system
+#     Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+# """
+
+#     H = Ht(t)
+#     return H, Ct(t)...
+# end
+
+
+
+######################################################################################################## Error Correction - Step 3
 
 ## Error Correction
 const tspan2 = [0.0:0.1:T3;]  #Time span for error correction of atom A or C
@@ -330,3 +450,38 @@ function f_correct_factory(site)
     return (t,ψ) -> f_correct(t, ψ, site)
 end
 
+# ###############################################################################################Timespan for storage between encoding and syndrome measurement 
+custom_identity = transition(basis,1,1) + transition(basis,2,2)
+custom_identity = Operator(custom_identity.basis_l, custom_identity.basis_r, SparseMatrixCSC{ComplexF32, Int64}(custom_identity.data))
+const H_storage = LazySum([0.0],[full_operator(custom_identity,total_qubits,[1,2,3,4,5])]) 
+
+function Ht_storage(t)
+    """
+    Function to calculate the time dependent Hamiltonian for the MCWF method.
+        -- H_storage: Hamiltonian for doing nothing during the storage time on atoms A-B-C for time T_storage
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+    """
+
+    return H_storage
+
+end
+
+
+function f_storage(t,ψ)
+    """
+    Function to calculate the time evolution of the system using the MCWF method for driving atoms 1-2.
+    Args:
+        t:: Float64: Time
+    Returns:
+        H:: LazySum: Time dependent Hamiltonian
+        C:: Array{Operator}: Array of decay operators acting on the system
+        Cdagger:: Array{Operator}: Array of adjoint decay operators acting on the system
+    """
+    
+        H = Ht_storage(t)
+        return H, C, Cdagger
+    end
+  
