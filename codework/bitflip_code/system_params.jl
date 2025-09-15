@@ -2,11 +2,11 @@ const n_qubits = 3
 const n_ancillas = 2
 const total_qubits = n_qubits + n_ancillas
 
-const g = [1, 0]
-const r = [0, 1]
+const g = [1.0, 0.0]
+const r = [0.0, 1.0]
 
-const α = 0                 # Coefficient of |g> state
-const β = sqrt(1-α^2)       # Coefficient of |r> state
+const α = 1                 # Coefficient of |r> state
+const β = sqrt(1-α^2)       # Coefficient of |g> state
 
 
 function wavefunction(num_qubits::Int64, α, β, site::Int64)
@@ -30,7 +30,7 @@ function wavefunction(num_qubits::Int64, α, β, site::Int64)
     @assert 0<=β<=1 "β should be between 0 and 1"
 
     site_states = [g for _ in 1:num_qubits]
-    site_states[site] = α.*g + β.*r
+    site_states[site] = α.*r + β.*g
 
     ψ = reduce(kron, site_states)
     return ψ
@@ -62,7 +62,7 @@ function params()
     "
     return Dict(
         :Ω => 1.0,             # Rabi frequency            
-        :γ_Decay => 1e-5,        # Decay rate on the qubits
+        :γ_Decay => 1.0e-5,        # Decay rate on the qubits
         :γ_dephase => 0.0,      # Dephasing rate on the qubits
         :V1_nn => -1000.0,      # rydberg interaction on the qubits
         # :V2_nn => -1000.0,      # rydberg interaction on the ancillas

@@ -1,24 +1,22 @@
 include("functions.jl")
-@show isdefined(@__MODULE__, :f1)
-
 
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/master_work/"
 # # script_dir = "C:/Users/14aka/OneDrive/Documents/rydberg_qec/codework"
-# script_dir = "/scratch/roq68sum/5atoms_code/bitflip_code/"
+script_dir = "/scratch/roq68sum/5atoms_code/bitflip_code/"
 
 function main(N_trajectories::Int,s)
     """
     Main function to run the simulation
     """
-    # data_folder = joinpath(script_dir, "decay_$(γ_decay)/s$(s)")
+    data_folder = joinpath(script_dir, "decay_$(γ_decay)/s$(s)")
 
-    # if !isdir(data_folder)
-    #     println("Directory does not exist. Creating directory...: $data_folder")
-    #     mkpath(data_folder)
-    # end
+    if !isdir(data_folder)
+        println("Directory does not exist. Creating directory...: $data_folder")
+        mkpath(data_folder)
+    end
 
-    T_storage = s*268
+    T_storage = s*698
     tspan_s = [0.0: 0.1: T_storage;]
     
     println("Running the simulation with N_trajectories = $N_trajectories")
@@ -64,8 +62,13 @@ function main(N_trajectories::Int,s)
     population_data[:a1][1:length(tspan1)] .+= ancilla1_population
     population_data[:a2][1:length(tspan1)] .+= ancilla2_population
 
-    ################################################################################################################ Storage Starts
     ψt_end = ψt[end]/norm(ψt[end])
+    ψ_target1 = α .* reduce(kron,[r,r,r,g,g]) + β .* reduce(kron,[g,g,g,g,g])
+    fidelity_after_encoding = abs((dagger(Ket(full_basis,ψ_target1)) * ψt_end)^2)
+    println("Bitflip code encoding done successfully with fidelity $(fidelity_after_encoding)")
+
+
+    ################################################################################################################ Storage Starts
     println("Storing the data qubits...")
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan_s,ψt_end,f_storage,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
 
@@ -82,8 +85,13 @@ function main(N_trajectories::Int,s)
     population_data[:a1][length(tspan1)+1:length(tspan1)+length(tspan_s)] .+= ancilla1_population
     population_data[:a2][length(tspan1)+1:length(tspan1)+length(tspan_s)] .+= ancilla2_population
 
-    ################################################################################################################ Driving ancillas 1,2,3
+
     ψt_end = ψt[end]/norm(ψt[end])
+    ψ_target2 = α .* reduce(kron,[r,r,r,g,g]) + β .* reduce(kron,[g,g,g,g,g])
+    fidelity_after_storage = abs((dagger(Ket(full_basis,ψ_target2)) * ψt_end)^2)
+    println("Fidelity after storage is $(fidelity_after_storage)")
+
+    ################################################################################################################ Driving ancillas 1,2,3
     println("Storage done. Driving Ancillas...")
 
     @time tout, ψt, jumps = timeevolution.mcwf_dynamic(tspan2,ψt_end,f2,maxiters=1e9,seed=(N_trajectories*10000),display_jumps=true)
@@ -126,6 +134,13 @@ function main(N_trajectories::Int,s)
 
         P11 = full_operator([ancilla1_2, ancilla2_2], 5, [4,5])
         ψ_full = (P11 * ψt_end) / norm(P11 * ψt_end);
+
+        ψ_proj_target = α .* reduce(kron,[r,g,r,r,r]) + β .* reduce(kron,[g,r,g,r,r])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)\n")
+
         
     elseif rand_float1 < ancilla2_population[end]
         println("Ancilla 2 error detected. Correcting Atom C")
@@ -141,6 +156,12 @@ function main(N_trajectories::Int,s)
 
         P01 = full_operator([ancilla1_1, ancilla2_2], 5, [4, 5])
         ψ_full = (P01 * ψt_end) / norm(P01 * ψt_end);
+
+        ψ_proj_target = α .* reduce(kron,[r,r,g,g,r]) + β .* reduce(kron,[g,g,r,g,r])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)\n")
 
 
     elseif rand_float1 < ancilla1_population[end]
@@ -158,7 +179,13 @@ function main(N_trajectories::Int,s)
         P10 = full_operator([ancilla1_2, ancilla2_1], 5, [4, 5])
         ψ_full = (P10 * ψt_end) / norm(P10 * ψt_end);
 
-    
+        ψ_proj_target = α .* reduce(kron,[g,r,r,r,g]) + β .* reduce(kron,[r,g,g,r,g])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)\n")
+
+
     else 
         println("No errors detected.")
         ancilla1 = 0.0
@@ -172,6 +199,13 @@ function main(N_trajectories::Int,s)
 
         P00 = full_operator([ancilla1_1, ancilla2_1], 5, [4, 5])
         ψ_full = (P00 * ψt_end) / norm(P00 * ψt_end);
+
+        ψ_proj_target = α .* reduce(kron,[r,r,r,g,g]) + β .* reduce(kron,[g,g,g,g,g])
+        ψ_proj_target = Ket(full_basis,ψ_proj_target)
+        ψ_proj_target /= norm(ψ_proj_target)
+        fidelity_after_projection = abs((dagger(ψ_proj_target) * ψ_full)^2)
+        print("Error Detection and Projection done with fidelity $(fidelity_after_projection)\n")
+
 
     end
     ################################################################################################################ Error Correction
@@ -241,13 +275,21 @@ function main(N_trajectories::Int,s)
         corrected_population_data[:a2][1:length(tout)] .+= real(expect(n_2, ψt))
     end
 
+    ψt_end = ψt[end]/norm(ψt[end])
+    ρ_final = ptrace(ψt_end, [1,2])
+
+    ψ_target = α .* reduce(kron,[r,r,r,g,g]) - β .* reduce(kron,[g,g,g,g,g])
+    ρ_target = ptrace(Ket(full_basis,ψ_target), [1,2])
+    fidelity_after_correction = real(tr(sqrt(sqrt(ρ_final.data)*ρ_target.data*sqrt(ρ_final.data)))^2)
+    println("Fidelity after correction is $(fidelity_after_correction)")
+
 
     print("Trajectory $N_trajectories Complete.\n")
 
     end_time = time() - start_time
 
-    println("Simulation complete. Saving data...")
-    # @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_case1_Ntraj=$(N_trajectories).jld2" has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
+    println("Simulation complete in $(end_time). Saving data...")
+    @save "$(data_folder)/N_atoms=$(total_qubits)_γ_decay=$(γ_Decay)_Ntraj=$(N_trajectories).jld2" has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
     println("Data saved.")
 end
 
@@ -260,8 +302,8 @@ if abspath(PROGRAM_FILE) == @__FILE__
         exit(1)
     end
     id = parse(Int, ARGS[1])
-    N_trajectories = (id % 1000) + 1
-    s = fld(id,1000) + 1
+    N_trajectories = (id % 10000) + 1
+    s = fld(id,10000) + 10
     main(N_trajectories,s)
 end
 
