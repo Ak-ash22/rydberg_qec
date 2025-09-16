@@ -9,7 +9,7 @@ function main(N_trajectories::Int,s)
     """
     Main function to run the simulation
     """
-    data_folder = joinpath(script_dir, "decay_$(γ_decay)/s$(s)")
+    data_folder = joinpath(script_dir, "decay_$(γ_Decay)/s$(s)")
 
     if !isdir(data_folder)
         println("Directory does not exist. Creating directory...: $data_folder")
@@ -303,7 +303,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
     end
     id = parse(Int, ARGS[1])
     N_trajectories = (id % 10000) + 1
-    s = fld(id,10000) + 10
+    s = fld(id,10000)*10 + 10
     main(N_trajectories,s)
 end
 
