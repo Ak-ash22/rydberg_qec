@@ -16,7 +16,7 @@ function main(N_trajectories::Int,s)
         mkpath(data_folder)
     end
 
-    T_storage = s*698
+    T_storage = s*798
     tspan_s = [0.0: 0.1: T_storage;]
     
     println("Running the simulation with N_trajectories = $N_trajectories")
