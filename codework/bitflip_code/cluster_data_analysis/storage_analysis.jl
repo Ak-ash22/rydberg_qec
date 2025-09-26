@@ -8,7 +8,7 @@ function average_populations(s)
     base_path = "/scratch/roq68sum/5atoms_code/bitflip_code/decay_$(decay)/s$(s)"
     file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
 
-    num_files = 10000  # Number of files to process
+    num_files = 1000  # Number of files to process
 
     # --- Load the first file to get available keys and array size dynamically ---
     first_file_path = base_path * file_pattern * "1.jld2"
@@ -21,6 +21,10 @@ function average_populations(s)
     avg_population_data = Dict(key => zeros(num_timesteps) for key in keys(population_data))
     avg_corrected_population_data = Dict(key => zeros(length(corrected_population_data[:a])) for key in keys(population_data))
     avg_fidelity_data = zeros(length(fidelity_data))
+
+    fidelities_after_encoding = []
+    fidelities_after_storage = []
+    fidelities_after_correct = []
 
 
     println("Processing $num_files files...")
@@ -36,6 +40,9 @@ function average_populations(s)
             for key in keys(population_data)
                 avg_population_data[key] .+= population_data[key]
             end
+            push!(fidelities_after_encoding, avg_population_data[:abc][3561])
+
+            push!(fidelities_after_storage, avg_population_data[:abc][end])
 
             #Accumulate error corrected population data
             for key in keys(corrected_population_data)
@@ -44,6 +51,7 @@ function average_populations(s)
 
             # Accumulate fidelity data
             avg_fidelity_data .+= fidelity_data
+            push!(fidelities_after_correct,fidelity_data[end])
 
         catch e
             @warn "Skipping missing or corrupted file in function 1: $file_path ($e)"
@@ -63,7 +71,7 @@ function average_populations(s)
 
     # --- Save Averaged Data ---
     final_file_path = "/scratch/roq68sum/5atoms_code/bitflip_code/decay_$(decay)/N_atoms=5_γ_decay=$(decay)_s$(s)_Ntraj=$(num_files)_avg.jld2"
-    @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data
+    @save final_file_path avg_population_data avg_corrected_population_data avg_fidelity_data fidelities_after_encoding fidelities_after_storage fidelities_after_correct
 
     println("Averaged populations saved to $final_file_path")
 end
@@ -122,7 +130,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         exit(1)
     end
     id = parse(Int, ARGS[1])
-    s = id*10
+    s = 50
     average_populations(id)
     # save_jump_files(id)
 end
