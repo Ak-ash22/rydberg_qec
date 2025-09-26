@@ -5,7 +5,7 @@ function average_populations(s)
     # base_path = "/scratch/roq68sum/shor_code_data/driving_abc9/"
     decay = 1.0e-5
 
-    base_path = "/scratch/roq68sum/5atoms_code/bitflip_code/decay_$(decay)/s$(s)"
+    base_path = "/scratch/roq68sum/5atoms_code/bitflip_code/decay_$(decay)/s$(s)/"
     file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
 
     num_files = 1000  # Number of files to process
@@ -40,9 +40,9 @@ function average_populations(s)
             for key in keys(population_data)
                 avg_population_data[key] .+= population_data[key]
             end
-            push!(fidelities_after_encoding, avg_population_data[:abc][3561])
+            push!(fidelities_after_encoding, population_data[:abc][3561])
 
-            push!(fidelities_after_storage, avg_population_data[:abc][end])
+            push!(fidelities_after_storage, population_data[:abc][end])
 
             #Accumulate error corrected population data
             for key in keys(corrected_population_data)
