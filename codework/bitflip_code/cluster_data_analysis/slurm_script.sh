@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH -J s50_fids
+#SBATCH -J single_T
 #SBATCH -o logs_auto_runner/%x_%a_log.out
 #SBATCH -e logs_auto_runner/%x_%a_log.err
 #SBATCH --cpus-per-task=2
@@ -12,3 +12,5 @@
 id=$SLURM_ARRAY_TASK_ID
 
 ~/julia-1.11.3/bin/julia storage_analysis.jl $id
+
+# ~/julia-1.11.3/bin/julia storage_analysis.jl $id

@@ -2,7 +2,7 @@ include("functions.jl")
 
 #Saving the output
 # script_dir = "/home/agfleischhauer/roq68sum/rydberg_qec/codework"
-script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_qec/codework/2atoms"
+script_dir = "/Users/akashmalemath/Documents/master_work/rydberg_thesis/rydberg_qec/codework/2atoms/"
 
 data_folder = joinpath(script_dir, "results_data")
 
@@ -27,7 +27,7 @@ function case1()
 
     @time begin
         decay = 10 .^ range(-5,-1,length=5);
-        sweep_rate = collect(range(0.01,0.50,length=1000));
+        sweep_rate = collect(range(0.01,1.50,length=1500));
         l = length(decay)
         m = length(sweep_rate)
     
@@ -56,7 +56,7 @@ function case1()
         end
     end
  
-    @save "$(data_folder)/decay_endmax_fidelity.jld2" decay sweep_rate fidelity_end max_fidelity
+    @save "$(data_folder)/decay_endmax_fidelity_new.jld2" decay sweep_rate fidelity_end max_fidelity
 end
 
 

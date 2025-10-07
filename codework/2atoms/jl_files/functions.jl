@@ -115,6 +115,6 @@ function solve_master_eqn(p::Parameters, tspan)
     """
     ρ_0 = initialize_system()
     eqn = ODEProblem(master_eqn, ρ_0, tspan, p)
-    sol = solve(eqn, Rodas3(autodiff=false), saveat = 1)
+    sol = solve(eqn, Rodas4P(autodiff=false), saveat = 1)
     return sol
 end

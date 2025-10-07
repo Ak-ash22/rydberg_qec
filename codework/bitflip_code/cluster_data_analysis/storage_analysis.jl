@@ -77,50 +77,50 @@ function average_populations(s)
 end
 
 
-# function save_jump_files()
-#     base_path = "/scratch/roq68sum/5atoms_code/5_atom_correction/decay_1e_5/"
-#     file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
-#     num_files = 1000  # Number of files to process
+function save_jump_files(s)
+    base_path = "/scratch/roq68sum/5atoms_code/bitflip_code/decay_$(decay)/s$(s)/"
+    file_pattern = "N_atoms=5_γ_decay=1.0e-5_Ntraj="
+    num_files = 1000  # Number of files to process
 
-#     jump_folder = base_path * "jump_files/"
+    jump_folder = base_path * "jump_files/"
 
-#     if !isdir(jump_folder)
-#         println("Directory does not exist. Creating directory...: $jump_folder")
-#         mkpath(jump_folder)
-#     end
+    if !isdir(jump_folder)
+        println("Directory does not exist. Creating directory...: $jump_folder")
+        mkpath(jump_folder)
+    end
 
-#     for i in 1:num_files
-#         file_path = base_path * file_pattern * string(i) * ".jld2"
-#         try
-#             # Load the file
-#             @load file_path has_error detected_error has_correction_error population_data corrected_population_data fidelity_data end_time
+    for i in 1:num_files
+        file_path = base_path * file_pattern * string(i) * ".jld2"
+        try
+            # Load the file
+            @load file_path population_data corrected_population_data fidelity_data
             
-#             if has_error && detected_error
-#                 # Save the jumps data to a new file
-#                 jump_file_path = jump_folder * "jumps_corrected_" * string(i) * ".jld2"
-#                 @save jump_file_path has_error population_data corrected_population_data fidelity_data end_time
-#             end
+            if population_data[:abc][end] < 0.9
+                # Save the jumps data to a new file
+                jump_file_path = jump_folder * "jumps_corrected_" * string(i) * ".jld2"
+                @save jump_file_path population_data corrected_population_data fidelity_data
+            end
 
-#             if has_correction_error
-#                 # Save the jumps data to a new file
-#                 jump_file_path = jump_folder * "jumps_correction_error_" * string(i) * ".jld2"
-#                 @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
-#             end
+            # if has_correction_error
+            #     # Save the jumps data to a new file
+            #     jump_file_path = jump_folder * "jumps_correction_error_" * string(i) * ".jld2"
+            #     @save jump_file_path has_correction_error population_data corrected_population_data fidelity_data end_time
+            # end
 
-#             if !has_error && detected_error
-#                 # Save the jumps data to a new file
-#                 jump_file_path = jump_folder * "jumps_detection_error_" * string(i) * ".jld2"
-#                 @save jump_file_path detected_error population_data corrected_population_data fidelity_data end_time
-#             end
+            # if !has_error && detected_error
+            #     # Save the jumps data to a new file
+            #     jump_file_path = jump_folder * "jumps_detection_error_" * string(i) * ".jld2"
+            #     @save jump_file_path detected_error population_data corrected_population_data fidelity_data end_time
+            # end
                 
-#             println("Saved jumps data Trajectories")
+            println("Saved jumps data Trajectories")
 
-#         catch e
-#             @warn "Skipping missing or corrupted file in function 2: $file_path ($e)"
-#         end
-#     end
+        catch e
+            @warn "Skipping missing or corrupted file in function 2: $file_path ($e)"
+        end
+    end
 
-# end
+end
 
 
 # --- Run the function ---
@@ -130,7 +130,7 @@ if abspath(PROGRAM_FILE) == @__FILE__
         exit(1)
     end
     id = parse(Int, ARGS[1])
-    s = 50
+    s = 1
     average_populations(id)
-    # save_jump_files(id)
+    save_jump_files(id)
 end
