@@ -7,7 +7,7 @@
 
 This repository contains the complete implementation and analysis of quantum error correction (QEC) codes using Rydberg atom facilitation mechanisms. The work was completed as part of a Master's thesis in the Erasmus Mundus Quantum Technology and Engineering (QuanTEEM) program at RPTU, Kaiserslautern, Germany.
 
-The project explores fault-tolerant quantum computing through the implementation of various quantum error correction protocols on Rydberg atom systems, leveraging the unique properties of Rydberg interactions for error detection and correction.
+The project explores primitive quantum error correcting codes through the implementation on Rydberg atom systems, leveraging the unique properties of Rydberg interactions for error detection and correction.
 
 ## Key Features
 
@@ -168,6 +168,7 @@ include("parallel_main.jl")
 # Run with parallel workers
 # This automatically distributes computation across available cores
 ```
+It is advised to run Shor's code simulation only in the HPC cluster together with optimizing few parameters, as the runtime could be really long.
 
 ### Analyzing Results
 
@@ -197,15 +198,6 @@ The simulations use realistic Rydberg atom parameters:
 - **Detuning (Δ)**: 1000-2000 MHz (various protocols)
 - **Decay Rate (γ_decay)**: 0.0 - 0.001 MHz (various noise levels)
 - **Dephasing Rate (γ_dephase)**: 0.0 - 1.0e-5 MHz
-
-### Timing Parameters
-
-Protocol evolution times are optimized for gate fidelity:
-
-- **Encoding Time (T1)**: (π + √2·π + π) ≈ 13.7 time units
-- **Hadamard Time (T2)**: 25π ≈ 78.5 time units (phase-flip)
-- **Syndrome Measurement (T3, T4)**: (2 + √2)π ≈ 11.0 time units
-- **Storage Time**: Adjustable (multiples of coherence time)
 
 ### Customization
 
@@ -337,13 +329,7 @@ Potential extensions of this work:
 
 ## Contributing
 
-Contributions are welcome! Areas of interest:
-- Optimization of gate sequences
-- Additional error correction codes
-- Experimental benchmarking
-- Documentation improvements
-
-Please open an issue or submit a pull request.
+Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
@@ -358,7 +344,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-**Author**: Akash  
+**Author**: Akash Malemath
 **Email**: 14akash2000@gmail.com  
 **GitHub**: [@Ak-ash22](https://github.com/Ak-ash22)  
 **Repository**: [rydberg_qec](https://github.com/Ak-ash22/rydberg_qec)
