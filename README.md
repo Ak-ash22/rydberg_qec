@@ -87,6 +87,7 @@ rydberg_qec/
 │       └── cluster_data_analysis/
 ├── images/                 # Generated plots and figures
 ├── Project.toml           # Julia project dependencies
+├── akash_malemath_master_thesis.pdf
 └── README.md
 ```
 
