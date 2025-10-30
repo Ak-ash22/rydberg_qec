@@ -344,7 +344,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Contact
 
-**Author**: Akash Malemath
+**Author**: Akash Malemath  
 **Email**: 14akash2000@gmail.com  
 **GitHub**: [@Ak-ash22](https://github.com/Ak-ash22)  
 **Repository**: [rydberg_qec](https://github.com/Ak-ash22/rydberg_qec)
